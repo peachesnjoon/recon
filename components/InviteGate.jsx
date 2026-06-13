@@ -26,7 +26,7 @@ export default function InviteGate({ onUnlock }) {
     <div style={s.page}>
       <div style={s.box}>
         <div style={s.logo}>recon</div>
-        <p style={s.sub}>Job intelligence for people who ship things.</p>
+        <p style={s.sub}>Job intelligence powered by Haiku 4.5, created by Aalia Arshad.</p>
         <div style={s.field}>
           <input
             style={s.input}
@@ -41,7 +41,7 @@ export default function InviteGate({ onUnlock }) {
           </button>
         </div>
         {error && <p style={s.error}>{error}</p>}
-        <p style={s.hint}>Don't have a code? Ask Lia.</p>
+        <p style={s.hint}>Don't have a code? <a href="https://www.linkedin.com/in/aalia-a-875914201/" target="_blank" rel="noopener noreferrer" style={s.hintLink}>Reach out.</a></p>
       </div>
     </div>
   )
@@ -68,6 +68,7 @@ const s = {
     border: "1.5px solid #E4E6EB", fontSize: 14, outline: "none",
     color: "#1C1E21", background: "#fff",
   },
+  hintLink: { color: "#1A73E8", textDecoration: "none", fontWeight: 600 },
   btn: {
     background: "#1A73E8", color: "#fff", border: "none",
     borderRadius: 8, padding: "10px 20px", fontSize: 14,
