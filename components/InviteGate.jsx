@@ -27,7 +27,6 @@ export default function InviteGate({ onUnlock }) {
       <div style={s.box}>
         <div style={s.logo}>recon</div>
         <p style={s.sub}>Job intelligence powered by Claude Haiku 4.5.</p>
-        <p style={s.credit}>Created by Aalia Arshad.</p>
         <div style={s.field}>
           <input
             style={s.input}
@@ -43,6 +42,7 @@ export default function InviteGate({ onUnlock }) {
         </div>
         {error && <p style={s.error}>{error}</p>}
         <p style={s.hint}>Don't have a code? <a href="https://www.linkedin.com/in/aalia-a-875914201/" target="_blank" rel="noopener noreferrer" style={s.hintLink}>Reach out.</a></p>
+        <p style={s.credit}>Created by Aalia Arshad.</p>
       </div>
     </div>
   )
