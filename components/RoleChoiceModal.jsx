@@ -143,7 +143,7 @@ const s = {
   manualPillWrap: { display: "inline-flex", alignItems: "center", gap: 2 },
   removeManual: { background: "none", border: "none", color: "#BCC0C4", fontSize: 11, cursor: "pointer", padding: "0 4px" },
   customRow: { display: "flex", gap: 8, marginBottom: 18 },
-  customInput: { flex: 1, padding: "8px 12px", borderRadius: 8, border: "1.5px solid #E4E6EB", fontSize: 13, outline: "none", color: "#1C1E21" },
+  customInput: { flex: 1, padding: "8px 12px", borderRadius: 8, border: "2px solid #E4E6EB", fontSize: 13, outline: "none", color: "#1C1E21" },
   addBtn: { background: "#F5F6F7", border: "1px solid #E4E6EB", borderRadius: 8, color: "#65676B", padding: "8px 16px", fontSize: 13, fontWeight: 600, cursor: "pointer", flexShrink: 0 },
   btnRow: { display: "flex", gap: 10 },
   skipBtn: { flex: "0 0 auto", background: "#F5F6F7", color: "#65676B", border: "1px solid #E4E6EB", borderRadius: 8, padding: "11px 18px", fontSize: 14, fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap" },
