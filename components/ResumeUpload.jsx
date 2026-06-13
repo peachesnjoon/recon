@@ -102,8 +102,8 @@ export default function ResumeUpload({
         </div>
       )}
 
-      {/* Fit preferences — only when a resume is loaded */}
-      {resumeData && (fitPreferences ? (
+      {/* Fit preferences — always present after the mandatory upload flow */}
+      {resumeData && fitPreferences && (
         <div style={s.prefSection}>
           <div style={s.prefPills}>
             <span style={s.prefPill}>⚙ {prefLabel}</span>
@@ -122,16 +122,7 @@ export default function ResumeUpload({
             </button>
           </div>
         </div>
-      ) : (
-        <div style={s.prefSection}>
-          <button
-            style={{ width: "100%", background: "#1A73E8", color: "#fff", border: "none", borderRadius: 8, padding: "9px 0", fontSize: 13, fontWeight: 600, cursor: "pointer" }}
-            onClick={onEditPreferences}
-          >
-            ⚙ Set roles & fit preferences
-          </button>
-        </div>
-      ))}
+      )}
 
       {!resumeData && (
         <div style={s.pitch}>Upload your resume to unlock fit ratings and tailored resume generation.</div>
