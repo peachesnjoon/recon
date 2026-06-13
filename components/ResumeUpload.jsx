@@ -102,8 +102,8 @@ export default function ResumeUpload({
         </div>
       )}
 
-      {/* Fit preferences */}
-      {fitPreferences ? (
+      {/* Fit preferences — only when a resume is loaded */}
+      {resumeData && (fitPreferences ? (
         <div style={s.prefSection}>
           <div style={s.prefPills}>
             <span style={s.prefPill}>⚙ {prefLabel}</span>
@@ -131,7 +131,7 @@ export default function ResumeUpload({
             ⚙ Set roles & fit preferences
           </button>
         </div>
-      )}
+      ))}
 
       {!resumeData && (
         <div style={s.pitch}>Upload your resume to unlock fit ratings and tailored resume generation.</div>
