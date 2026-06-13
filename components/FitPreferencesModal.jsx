@@ -67,14 +67,16 @@ export default function FitPreferencesModal({ onConfirm, onSkip, initialPrefs })
             onChange={setFlexibleYoe}
             label="Treat experience requirements as flexible"
             sub={flexibleYoe
-              ? "YOE requirements won't filter or penalise you"
-              : "Jobs requiring significantly more experience will rank lower"}
+              ? "On: View roles with all YOE requirements"
+              : "Off: View roles based on my YOE"}
           />
           <Toggle
             value={companySelectivity}
             onChange={setCompanySelectivity}
             label="Company selectivity matters"
-            sub="Off: judge the role, not the company name"
+            sub={companySelectivity
+              ? "On: Company name matter more than roles"
+              : "Off: Roles matter more than company name"}
           />
           <Toggle
             value={openToPivot}
