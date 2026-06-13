@@ -51,11 +51,11 @@ export default function RoleChoiceModal({
   }
 
   return (
-    <div style={s.overlay} onClick={onClose}>
+    <div style={s.overlay} onClick={isEditing ? onClose : undefined}>
       <div style={s.modal} onClick={e => e.stopPropagation()}>
         <div style={s.header}>
           <span style={s.title}>✦ What roles are you targeting?</span>
-          <button style={s.close} onClick={onClose}>✕</button>
+          {isEditing && <button style={s.close} onClick={onClose}>✕</button>}
         </div>
 
         {sentence && <p style={s.signal}>{sentence}</p>}
@@ -110,9 +110,9 @@ export default function RoleChoiceModal({
         </div>
 
         <div style={s.btnRow}>
-          {onSkip && (
+          {onSkip && isEditing && (
             <button style={s.skipBtn} onClick={onSkip}>
-              {isEditing ? "Skip to preferences" : "Skip"}
+              Skip to preferences
             </button>
           )}
           <button
@@ -143,7 +143,7 @@ const s = {
   manualPillWrap: { display: "inline-flex", alignItems: "center", gap: 2 },
   removeManual: { background: "none", border: "none", color: "#BCC0C4", fontSize: 11, cursor: "pointer", padding: "0 4px" },
   customRow: { display: "flex", gap: 8, marginBottom: 18 },
-  customInput: { flex: 1, padding: "8px 12px", borderRadius: 8, border: "2px solid #E4E6EB", fontSize: 13, outline: "none", color: "#1C1E21", background: "#fff" },
+  customInput: { flex: 1, padding: "8px 12px", borderRadius: 8, border: "1.5px solid #E4E6EB", fontSize: 13, outline: "none", color: "#1C1E21", background: "#fff" },
   addBtn: { background: "#F5F6F7", border: "1px solid #E4E6EB", borderRadius: 8, color: "#65676B", padding: "8px 16px", fontSize: 13, fontWeight: 600, cursor: "pointer", flexShrink: 0 },
   btnRow: { display: "flex", gap: 10 },
   skipBtn: { flex: "0 0 auto", background: "#F5F6F7", color: "#65676B", border: "1px solid #E4E6EB", borderRadius: 8, padding: "11px 18px", fontSize: 14, fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap" },

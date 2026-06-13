@@ -67,17 +67,15 @@ export default function FitPreferencesModal({ onConfirm, onSkip, initialPrefs })
             onChange={setFlexibleYoe}
             label="Treat experience requirements as flexible"
             sub={flexibleYoe
-              ? "On: View matches based on all sorts of YOE requirements"
-              : "Off: View matches based on the YOE in my resume"}
-          />  
+              ? "YOE requirements won't filter or penalise you"
+              : "Jobs requiring significantly more experience will rank lower"}
+          />
           <Toggle
             value={companySelectivity}
             onChange={setCompanySelectivity}
             label="Company selectivity matters"
-            sub={companySelectivity
-              ? "On: View matches based on company popularity"
-              : "Off: View matches based on role than popularity"}
-          />  
+            sub="Off: judge the role, not the company name"
+          />
           <Toggle
             value={openToPivot}
             onChange={setOpenToPivot}
@@ -87,8 +85,14 @@ export default function FitPreferencesModal({ onConfirm, onSkip, initialPrefs })
         </div>
 
         <div style={t.footer}>
-          <button style={t.skipBtn} onClick={onSkip}>
-            {isEditing ? "Cancel" : "Skip for now"}
+          <button
+            style={t.skipBtn}
+            onClick={() => {
+              if (isEditing) { onSkip() }
+              else { onConfirm({ weightBasis, flexibleYoe, companySelectivity, openToPivot }) }
+            }}
+          >
+            {isEditing ? "Cancel" : "Use defaults"}
           </button>
           <button
             style={t.confirmBtn}

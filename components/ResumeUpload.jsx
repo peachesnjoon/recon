@@ -103,7 +103,7 @@ export default function ResumeUpload({
       )}
 
       {/* Fit preferences */}
-      {fitPreferences && (
+      {fitPreferences ? (
         <div style={s.prefSection}>
           <div style={s.prefPills}>
             <span style={s.prefPill}>⚙ {prefLabel}</span>
@@ -112,7 +112,7 @@ export default function ResumeUpload({
             <span style={s.prefPill}>⚙ {fitPreferences.openToPivot ? "Open to Career Pivots" : "No Career Pivots"}</span>
           </div>
           <div style={s.prefActions}>
-            <button style={s.editBtn} onClick={onEditPreferences}>Edit</button>
+            <button style={s.editBtn} onClick={onEditPreferences}>Edit roles & fit</button>
             <button
               style={{ ...s.editBtn, color: isRating ? "#BCC0C4" : "#1A73E8", borderColor: isRating ? "#E4E6EB" : "#BFDBFE", background: isRating ? "none" : "#F0F7FF" }}
               onClick={onRerate}
@@ -121,6 +121,15 @@ export default function ResumeUpload({
               {isRating ? "⟳ Rating..." : "↻ Re-rate"}
             </button>
           </div>
+        </div>
+      ) : (
+        <div style={s.prefSection}>
+          <button
+            style={{ width: "100%", background: "#1A73E8", color: "#fff", border: "none", borderRadius: 8, padding: "9px 0", fontSize: 13, fontWeight: 600, cursor: "pointer" }}
+            onClick={onEditPreferences}
+          >
+            ⚙ Set roles & fit preferences
+          </button>
         </div>
       )}
 

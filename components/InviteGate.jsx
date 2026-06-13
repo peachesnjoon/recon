@@ -75,7 +75,7 @@ const s = {
     borderRadius: 8, padding: "10px 20px", fontSize: 14,
     fontWeight: 600, cursor: "pointer",
   },
-  credit: { fontSize: 11, color: "#9CA3AF", marginTop: 4 },
+  credit: { fontSize: 11, color: "#BCC0C4", marginTop: 4 },
   error: { color: "#E53935", fontSize: 13, margin: 0 },
-  hint: { color: "#BCC0C4", fontSize: 12, margin: 0 },
+  hint: { color: "#9CA3AF", fontSize: 12, margin: 0 },
 }
