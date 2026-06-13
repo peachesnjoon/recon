@@ -65,7 +65,10 @@ export default function Home() {
   useEffect(() => {
     setMounted(true)
     setIsMobile(window.innerWidth < 1024)
-    setUnlocked(localStorage.getItem("recon_unlocked") === "true")
+    const params = new URLSearchParams(window.location.search)
+    const forced = params.get("demo") === "1"
+    if (forced) localStorage.setItem("recon_unlocked", "true")
+    setUnlocked(forced || localStorage.getItem("recon_unlocked") === "true")
     const saved = sessionStorage.getItem("recon_selected")
     if (saved) setSelectedJobId(saved)
     const handleResize = () => setIsMobile(window.innerWidth < 1024)
@@ -157,6 +160,12 @@ export default function Home() {
     setRoleInput(chosenRoles.join(", "))
     setShowRoleModal(false)
     // proceed to fit preferences next
+    setShowPrefModal(true)
+  }
+
+  const handleRoleSkip = () => {
+    // keep whatever roles are already active, jump straight to fit preferences
+    setShowRoleModal(false)
     setShowPrefModal(true)
   }
 
@@ -262,6 +271,8 @@ export default function Home() {
       initialSelected={isEditingPrefs ? activeRoles : null}
       initialManual={manualRoles}
       onConfirm={handleRoleConfirm}
+      onSkip={handleRoleSkip}
+      isEditing={isEditingPrefs}
       onClose={() => setShowRoleModal(false)}
     />
   )
@@ -320,136 +331,19 @@ export default function Home() {
     fitPreferences,
   }
 
-  // ── MOBILE ───────────────────────────────────────────────────────────────────
+  // ── MOBILE: desktop-only notice ──────────────────────────────────────────────
   if (isMobile) {
-    const activeFilterCount = [
-      filters.category !== "All",
-      filters.yoe[0] > 0 || filters.yoe[1] < 20,
-      filters.industries.length < INDUSTRIES.length,
-      filters.companyType !== "Both",
-      filters.languages?.selected?.length > 0,
-      filters.education?.selected?.length > 0,
-      filters.jobTypes?.selected?.length > 0,
-      filters.certification !== "any",
-    ].filter(Boolean).length
-
     return (
-      <div style={m.app}>
-        {prefModalEl}
-        {dummyModalEl}
-        {roleModalEl}
-        {mismatchModalEl}
-        <input ref={uploadInputRef} type="file" accept="application/pdf" style={{ display: "none" }} onChange={e => handleUploadFile(e.target.files[0])} />
-
-        <div style={m.topBar}>
-          {mobileTab === "detail" ? (
-            <>
-              <button style={m.backBtn} onClick={() => setMobileTab("jobs")}>← Jobs</button>
-              {selectedJob && <div style={m.detailNavTitle}>{selectedJob.title}</div>}
-            </>
-          ) : (
-            <>
-              <div style={m.logoSmall}>recon</div>
-              <div style={m.searchRow}>
-                <input
-                  style={m.searchInput}
-                  value={roleInput}
-                  onChange={e => setRoleInput(e.target.value)}
-                  onKeyDown={e => e.key === "Enter" && handleSearch()}
-                  placeholder="Job title..."
-                />
-                <button style={m.searchBtn} onClick={() => handleSearch()} disabled={loading.scraping}>
-                  {loading.scraping ? "..." : "Go"}
-                </button>
-              </div>
-            </>
-          )}
-        </div>
-
-        {isAnyLoading && (
-          <div style={m.statusBar}>
-            {loading.scraping && <span style={m.statusPill}>⟳ Fetching jobs...</span>}
-            {backgroundLoading && !loading.scraping && <span style={m.statusPill}>⟳ Loading more...</span>}
-            {loading.parsing && <span style={m.statusPill}>⟳ Parsing resume...</span>}
-          </div>
-        )}
-
-        <div style={m.content}>
-          {mobileTab === "jobs" && (
-            <div style={m.jobsScreen}>
-              {/* Slim filter bar — just count + filter button */}
-              <div style={m.listMeta}>
-                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                  {loading.rating && <span style={{ fontSize: 12, display: "inline-block", animation: "spin 1s linear infinite", color: "#1A73E8" }}>⟳</span>}
-                  <span style={m.listMetaText}>
-                    {loading.scraping ? "Searching..." : loading.rating ? "Rating..." : `${visibleJobs.length}${jobs.length > visibleJobs.length ? ` of ${jobs.length}` : ""} jobs`}
-                  </span>
-                  {activeRoles.length > 0 && <RolePill roles={activeRoles} />}
-                </div>
-                <button
-                  style={{ ...m.filterBtn, ...(activeFilterCount > 0 ? m.filterBtnActive : {}) }}
-                  onClick={() => setMobileTab("filters")}
-                >
-                  ⊟ Filters{activeFilterCount > 0 ? ` (${activeFilterCount})` : ""}
-                </button>
-              </div>
-
-              <div style={{ ...m.list, position: "relative" }}>
-                {visibleJobs.length === 0 && !loading.scraping && (
-                  <div style={m.empty}>
-                    <div style={m.emptyTitle}>No jobs match your filters.</div>
-                    <div style={m.emptySub}>Tap Filters to adjust.</div>
-                  </div>
-                )}
-                {visibleJobs.map(job => (
-                  <MobileJobCard key={job.id} job={job} rating={ratings[job.id]}
-                    selected={selectedJobId === job.id} onClick={() => handleJobSelect(job.id)} />
-                ))}
-                {loading.scraping && (
-                  <div style={s.overlay}>
-                    <div style={s.overlayInner}>
-                      <span style={s.overlayIcon}>⟳</span>
-                      <span style={s.overlayText}>Fetching listings...</span>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
-          {mobileTab === "detail" && (
-            <div style={{ flex: 1, overflow: "hidden" }}>
-              <JobDetail {...jobDetailProps} />
-            </div>
-          )}
-
-          {mobileTab === "filters" && (
-            <div style={{ flex: 1, overflowY: "auto", background: "#fff" }}>
-              <div style={{ padding: "16px 16px 0" }}>
-                <ResumeUpload {...resumeUploadProps} />
-              </div>
-              <FilterPanel {...filterPanelProps} />
-            </div>
-          )}
-        </div>
-
-        <div style={m.tabBar}>
-          <button style={m.tabBtn} onClick={() => setMobileTab("jobs")}>
-            <span style={{ fontSize: 20 }}>⊞</span>
-            <span style={{ ...m.tabLabel, color: mobileTab === "jobs" ? "#1A73E8" : "#65676B" }}>
-              Jobs {visibleJobs.length > 0 ? `(${visibleJobs.length})` : ""}
-            </span>
-          </button>
-          <button style={m.tabBtn} onClick={() => selectedJob && setMobileTab("detail")}>
-            <span style={{ fontSize: 20 }}>◫</span>
-            <span style={{ ...m.tabLabel, color: mobileTab === "detail" ? "#1A73E8" : "#65676B" }}>Details</span>
-          </button>
-          <button style={m.tabBtn} onClick={() => setMobileTab("filters")}>
-            <span style={{ fontSize: 20 }}>⊙</span>
-            <span style={{ ...m.tabLabel, color: mobileTab === "filters" ? "#1A73E8" : "#65676B" }}>
-              {resumeData ? "✓ Profile" : "Profile"}
-            </span>
-          </button>
+      <div style={{
+        height: "100dvh", display: "flex", flexDirection: "column",
+        alignItems: "center", justifyContent: "center", textAlign: "center",
+        padding: "40px 28px", fontFamily: "'Inter', sans-serif", background: "#F5F6F7", gap: 16,
+      }}>
+        <div style={{ fontSize: 22, fontWeight: 800, color: "#1C1E21", letterSpacing: "-0.5px" }}>recon</div>
+        <div style={{ fontSize: 40 }}>🖥️</div>
+        <div style={{ fontSize: 17, fontWeight: 700, color: "#1C1E21" }}>Best viewed on desktop</div>
+        <div style={{ fontSize: 14, color: "#65676B", lineHeight: 1.6, maxWidth: 320 }}>
+          recon is a desktop-first experience while in development. Open this link on a laptop or desktop browser for the full experience.
         </div>
       </div>
     )
