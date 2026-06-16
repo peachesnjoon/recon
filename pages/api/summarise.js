@@ -5,8 +5,7 @@ export default async function handler(req, res) {
   const { jobs } = req.body
   if (!jobs?.length) return res.status(200).json({ summaries: {} })
 
-  // only summarise first 10 to avoid token limits and timeouts
-  const batch = jobs.slice(0, 5)
+  const batch = jobs.slice(0, 20)
 
   try {
     const response = await fetch("https://api.anthropic.com/v1/messages", {
@@ -18,7 +17,7 @@ export default async function handler(req, res) {
       },
       body: JSON.stringify({
         model: "claude-haiku-4-5",
-        max_tokens: 2000,
+        max_tokens: 6000,
         system: `You summarise job descriptions. Return ONLY valid JSON, no markdown, no explanation.`,
         messages: [{
           role: "user",

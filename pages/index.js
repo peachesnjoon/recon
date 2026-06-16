@@ -10,6 +10,7 @@ import FitPreferencesModal from "../components/FitPreferencesModal"
 import DummyResumeModal from "../components/DummyResumeModal"
 import RoleChoiceModal from "../components/RoleChoiceModal"
 import MismatchModal from "../components/MismatchModal"
+import MarketSnapshot from "../components/MarketSnapshot"
 
 const INDUSTRIES = ["Tech", "Consultancy", "Finance", "Logistics", "E-commerce", "Healthcare"]
 const DEFAULT_ROLE = "Product Manager"
@@ -41,6 +42,7 @@ export default function Home() {
   const [signalData, setSignalData] = useState({ signal: null, roles: [], focused: true })
   const [mismatchDismissed, setMismatchDismissed] = useState(false)
   const [showMismatchModal, setShowMismatchModal] = useState(false)
+  const [searchKey, setSearchKey] = useState(0)
   const uploadInputRef = useRef(null)
   const [filters, setFilters] = useState({
     industries: [...INDUSTRIES],
@@ -104,13 +106,31 @@ export default function Home() {
   }
 
   const handleSearch = async (kw) => {
-    const role = kw || roleInput
-    if (!role.trim()) return
-    const combined = [role, keywordInput].filter(Boolean).join(" ")
-    setActiveRoles([combined])
+    const raw = kw || roleInput
+    // split comma-separated roles; allow empty to show all
+    const roles = raw.trim()
+      ? raw.split(",").map(r => r.trim()).filter(Boolean)
+      : []
+    const searchRoles = roles.length > 0
+      ? (keywordInput ? roles.map(r => `${r} ${keywordInput}`) : roles)
+      : keywordInput
+      ? [keywordInput]
+      : [""]  // empty string = show all from Supabase
+
+    setActiveRoles(roles.length > 0 ? roles : keywordInput ? [keywordInput] : [])
     setMismatchDismissed(false)
-    const fetched = await scrapeJobs([combined], locationInput || "Singapore")
-    if (fetched.length > 0 && resumeData) await rateJobs(resumeData, fetched.slice(0, 24), fitPreferences)
+    setSearchKey(k => k + 1)
+    const fetched = await scrapeJobs(searchRoles, locationInput || "Singapore")
+    if (fetched.length > 0 && resumeData) {
+      await rateJobs(resumeData, fetched.slice(0, 24), fitPreferences)
+      if (fetched.length > 24) {
+        ;(async () => {
+          for (let i = 24; i < Math.min(fetched.length, 96); i += 24) {
+            await rateJobs(resumeData, fetched.slice(i, i + 24), fitPreferences)
+          }
+        })()
+      }
+    }
     if (fetched.length > 0) {
       setSelectedJobId(fetched[0].id)
       sessionStorage.setItem("recon_selected", fetched[0].id)
@@ -180,6 +200,13 @@ export default function Home() {
     const fetched = await scrapeJobs(roles, locationInput || "Singapore")
     if (fetched.length > 0 && parsed) {
       await rateJobs(parsed, fetched.slice(0, 24), prefs)
+      if (fetched.length > 24) {
+        ;(async () => {
+          for (let i = 24; i < Math.min(fetched.length, 96); i += 24) {
+            await rateJobs(parsed, fetched.slice(i, i + 24), prefs)
+          }
+        })()
+      }
       setSelectedJobId(fetched[0].id)
       sessionStorage.setItem("recon_selected", fetched[0].id)
     }
@@ -358,7 +385,13 @@ export default function Home() {
       {mismatchModalEl}
       <input ref={uploadInputRef} type="file" accept="application/pdf" style={{ display: "none" }} onChange={e => handleUploadFile(e.target.files[0])} />
       <div style={s.nav}>
-        <div style={s.navLogo}>recon</div>
+        <div style={{ display: "flex", alignItems: "center", gap: 0, flexShrink: 0 }}>
+          <div style={s.navLogo}>recon</div>
+          <div style={s.screenTabs}>
+            <span style={{ ...s.screenTab, ...s.screenTabActive }}>Job Search</span>
+            <a href="/agent" style={{ ...s.screenTab, color: "#65676B", textDecoration: "none" }}>AI Agent</a>
+          </div>
+        </div>
         <div style={s.searchGroup}>
           <div style={s.searchField}>
             <span style={s.searchFieldLabel}>Role</span>
@@ -408,6 +441,7 @@ export default function Home() {
         </div>
 
         <div style={{ ...s.listPane, position: "relative" }}>
+          <MarketSnapshot key={searchKey} keywords={activeRoles[0] || null} visible={!loading.scraping} />
           <div style={s.listHeader}>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               {loading.rating && (
@@ -532,6 +566,9 @@ const s = {
   searchDivider: { width: 1, height: 28, background: "#E4E6EB", flexShrink: 0 },
   searchBtn: { background: "#1A73E8", color: "#fff", border: "none", padding: "0 20px", fontSize: 13, fontWeight: 600, cursor: "pointer", height: 38, flexShrink: 0, borderRadius: "0 6px 6px 0" },
   navRight: { marginLeft: "auto", display: "flex", alignItems: "center", gap: 8 },
+  screenTabs: { display: "flex", marginLeft: 16, borderLeft: "1px solid #E4E6EB", paddingLeft: 16, gap: 2 },
+  screenTab: { fontSize: 12, fontWeight: 600, padding: "4px 10px", borderRadius: 6, cursor: "pointer" },
+  screenTabActive: { color: "#1A73E8", background: "#EBF3FD" },
   resumeBadge: { background: "#F0FFF4", color: "#16A34A", fontSize: 11, fontWeight: 600, padding: "4px 10px", borderRadius: 20, border: "1px solid #BBF7D0" },
   bgPill: { background: "#FEF3C7", color: "#92400E", fontSize: 11, fontWeight: 600, padding: "4px 10px", borderRadius: 20, display: "flex", alignItems: "center" },
   pill: { background: "#EBF3FD", color: "#1A73E8", fontSize: 11, fontWeight: 600, padding: "4px 10px", borderRadius: 20 },

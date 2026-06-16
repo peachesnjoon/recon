@@ -1,24 +1,64 @@
 export const config = { maxDuration: 30 }
 
+import supabase from "../../lib/supabase"
+
 export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).end()
-  const { keywords, limit = 30 } = req.body
+  const { keywords, limit = 100 } = req.body
 
   try {
+    // read from Supabase — keyword search across title and jd (or all jobs if no keyword)
+    let query = supabase
+      .from("jobs")
+      .select("*")
+      .eq("source", "MCF")
+      .order("posted_at", { ascending: false })
+      .limit(limit)
+
+    if (keywords && keywords.trim()) {
+      query = query.or(`title.ilike.%${keywords}%,jd.ilike.%${keywords}%`)
+    }
+
+    const { data: rows, error } = await query
+    if (error) throw new Error(error.message)
+
+    // if DB has results, return them directly
+    if (rows && rows.length > 0) {
+      const jobs = rows.map(row => ({
+        id: row.id,
+        title: row.title,
+        company: row.company,
+        stage: row.stage,
+        industry: row.industry,
+        location: row.location,
+        salary: row.salary,
+        jd: row.jd,
+        url: row.url,
+        postedAt: row.posted_at,
+        jobType: row.job_type,
+        source: row.source,
+        jdSummary: row.jd_summary || null,
+      }))
+      return res.status(200).json({ jobs, fromCache: true })
+    }
+
+    // fallback: DB not yet populated — hit MCF live
     const params = new URLSearchParams({
       search: keywords,
       limit,
       sortBy: "new_posting_date",
     })
-    const url = `https://api.mycareersfuture.gov.sg/v2/jobs?${params}`
-    const mcfRes = await fetch(url, {
-      headers: {
-        "Accept": "application/json",
-        "User-Agent": "Mozilla/5.0",
-        "Origin": "https://www.mycareersfuture.gov.sg",
-        "Referer": "https://www.mycareersfuture.gov.sg/",
+    const mcfRes = await fetch(
+      `https://api.mycareersfuture.gov.sg/v2/jobs?${params}`,
+      {
+        headers: {
+          Accept: "application/json",
+          "User-Agent": "Mozilla/5.0",
+          Origin: "https://www.mycareersfuture.gov.sg",
+          Referer: "https://www.mycareersfuture.gov.sg/",
+        },
       }
-    })
+    )
     const data = await mcfRes.json()
     const results = data.results || data.data || []
 
@@ -26,7 +66,7 @@ export default async function handler(req, res) {
       id: `mcf_${item.uuid || i}`,
       title: item.title || "",
       company: item.postedCompany?.name || item.hiringEmployer?.name || "",
-      stage: "MNC",
+      stage: inferStage(item),
       industry: inferIndustry(item),
       location: "Singapore",
       salary: item.salary?.maximum
@@ -45,11 +85,56 @@ export default async function handler(req, res) {
       source: "MCF",
     }))
 
-    return res.status(200).json({ jobs })
+    // store these live results so they're cached for next time
+    if (jobs.length) {
+      supabase
+        .from("jobs")
+        .upsert(
+          jobs.map(j => ({
+            id: j.id,
+            title: j.title,
+            company: j.company,
+            stage: j.stage,
+            industry: j.industry,
+            location: j.location,
+            salary: j.salary,
+            jd: j.jd,
+            url: j.url,
+            posted_at: j.postedAt,
+            job_type: j.jobType,
+            source: j.source,
+            synced_at: new Date().toISOString(),
+          })),
+          { onConflict: "id" }
+        )
+        .then(({ error }) => { if (error) console.error("MCF upsert:", error.message) })
+    }
+
+    return res.status(200).json({ jobs, fromCache: false })
   } catch (err) {
     console.error("MCF error:", err.message)
     return res.status(500).json({ error: err.message })
   }
+}
+
+function inferStage(item) {
+  const text = (
+    stripHtml(item.description || "") + " " +
+    (item.postedCompany?.name || "") + " " +
+    (item.categories?.[0]?.category || "")
+  ).toLowerCase()
+  const startupSignals = [
+    "startup", "start-up", "series a", "series b", "series c", "series d",
+    "seed funded", "seed stage", "seed round", "early stage", "pre-ipo",
+    "venture-backed", "vc-backed", "venture capital",
+    "well-funded", "well funded", "fast-growing", "fast growing",
+    "high-growth", "high growth", "hypergrowth", "scale-up", "scaleup",
+    "growth stage", "fast-paced", "rapidly growing", "rapidly expanding",
+    "we are a small", "small team", "growing team",
+    "founded in 202", "founded in 2019", "founded in 2018", "founded in 2017",
+  ]
+  if (startupSignals.some(s => text.includes(s))) return "Startup"
+  return "MNC"
 }
 
 function inferIndustry(item) {
@@ -65,10 +150,10 @@ function inferIndustry(item) {
 
 function inferJobType(item) {
   const text = (item.employmentTypes?.[0]?.employmentType || "").toLowerCase()
-  const jd = (item.description || "").toLowerCase()
-  if (text.includes("part") || jd.includes("part-time") || jd.includes("part time")) return "Part Time"
+  const jd = stripHtml(item.description || "").toLowerCase()
+  if (text.includes("part") || jd.includes("part-time")) return "Part Time"
   if (text.includes("contract") || jd.includes("contract")) return "Contract"
-  if (text.includes("intern") || jd.includes("internship") || jd.includes("intern ")) return "Internship"
+  if (text.includes("intern") || jd.includes("internship")) return "Internship"
   if (text.includes("freelance") || jd.includes("freelance")) return "Freelance"
   return "Full Time"
 }

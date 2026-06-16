@@ -238,6 +238,30 @@ export function useJobSearch() {
       sessionStorage.setItem("recon_jobs", JSON.stringify(mcfJobs))
       setLoading(l => ({ ...l, scraping: false }))
 
+      // batch-summarize all jobs in background (20 at a time)
+      const batchSummarise = async (jobList) => {
+        const BATCH = 20
+        for (let i = 0; i < jobList.length; i += BATCH) {
+          const batch = jobList.slice(i, i + BATCH).filter(j => !j.jdSummary)
+          if (!batch.length) continue
+          try {
+            const res = await fetch("/api/summarise", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ jobs: batch }),
+            })
+            const { summaries } = await res.json()
+            if (!summaries) continue
+            setJobs(prev => {
+              const updated = prev.map(j => summaries[j.id] ? { ...j, jdSummary: summaries[j.id] } : j)
+              sessionStorage.setItem("recon_jobs", JSON.stringify(updated))
+              return updated
+            })
+          } catch (e) { /* silent */ }
+        }
+      }
+      batchSummarise(mcfJobs)
+
       // merge JobStreet for the first role in background
       setTimeout(() => {
         const existingKeys = mcfJobs.map(j =>
@@ -256,6 +280,7 @@ export function useJobSearch() {
               if (newJobs.length === 0) return prev
               const merged = [...prev, ...newJobs]
               sessionStorage.setItem("recon_jobs", JSON.stringify(merged))
+              batchSummarise(newJobs)
               return merged
             })
           }

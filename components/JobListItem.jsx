@@ -1,5 +1,6 @@
 import { useState } from "react"
 import { categoryColor, categoryBg, formatDate } from "../lib/filters"
+import { getCompanyTier, TIER_LABELS, TIER_COLORS } from "../lib/companyTiers"
 
 const DOMAIN_MAP = {
   "shopee": "shopee.com", "grab": "grab.com", "sea limited": "sea.com",
@@ -86,6 +87,7 @@ export function FaviconLogo({ company, size = 44 }) {
 export default function JobListItem({ job, rating, selected, onClick }) {
   const cat = rating?.category
   const date = formatDate(job.postedAt)
+  const tier = getCompanyTier(job.company)
   const reqs = [
     ...(job.jdSummary?.hardNos || []),
     ...(job.jdSummary?.goodToHave || []),
@@ -118,10 +120,23 @@ export default function JobListItem({ job, rating, selected, onClick }) {
             )}
           </div>
 
-          {/* Company + date */}
+          {/* Company + tier + date */}
           <div style={s.companyRow}>
             <span style={s.company}>{job.company}</span>
-            {date && <span style={s.date}>{date}</span>}
+            <div style={{ display: "flex", alignItems: "center", gap: 4, flexShrink: 0 }}>
+              {tier && (
+                <span style={{
+                  fontSize: 9, fontWeight: 700, padding: "2px 6px", borderRadius: 4,
+                  color: TIER_COLORS[tier].color,
+                  background: TIER_COLORS[tier].background,
+                  border: `1px solid ${TIER_COLORS[tier].border}`,
+                  letterSpacing: 0.3,
+                }}>
+                  {TIER_LABELS[tier]}
+                </span>
+              )}
+              {date && <span style={s.date}>{date}</span>}
+            </div>
           </div>
 
           {/* Meta tags */}
