@@ -401,7 +401,10 @@ export default function Home() {
       {showAbout && <AboutModal onClose={() => setShowAbout(false)} />}
       <div style={s.nav}>
         <div style={{ display: "flex", alignItems: "center", flexShrink: 0, height: "100%" }}>
-          <div style={s.navLogo}>recon</div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 1 }}>
+            <div style={s.navLogo}>recon</div>
+            <div style={{ fontSize: 9, color: "rgba(255,255,255,0.35)", letterSpacing: 0.3, fontWeight: 400 }}>powered by Claude Haiku 4.5</div>
+          </div>
           <div style={s.screenTabs}>
             <span style={{ ...s.screenTab, ...s.screenTabActive }}>Job Search</span>
             <a href="/agent" style={{ ...s.screenTab, textDecoration: "none" }}>AI Agent</a>
