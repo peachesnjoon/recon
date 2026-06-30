@@ -2,6 +2,12 @@ import supabase from "../../lib/supabase"
 
 export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).end()
+
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_KEY) {
+    console.error("scrape-mcf: missing Supabase env vars")
+    return res.status(200).json({ jobs: [], error: "Supabase env vars not configured" })
+  }
+
   const { keywords, limit = 100 } = req.body
 
   try {

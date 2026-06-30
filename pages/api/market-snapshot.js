@@ -5,6 +5,12 @@ const MIN_OPENINGS = 2 // ignore companies with fewer than this
 
 export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).end()
+
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_KEY) {
+    console.error("market-snapshot: missing Supabase env vars")
+    return res.status(200).json({ rows: [], error: "Supabase env vars not configured" })
+  }
+
   const { keywords } = req.body
 
   try {
