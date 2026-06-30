@@ -189,8 +189,11 @@ export function useJobSearch() {
       })
       const data = await res.json()
       if (data.error) throw new Error(data.error)
-      setRatings(data.ratings)
-      sessionStorage.setItem("recon_ratings", JSON.stringify(data.ratings))
+      setRatings(prev => {
+        const merged = { ...prev, ...data.ratings }
+        sessionStorage.setItem("recon_ratings", JSON.stringify(merged))
+        return merged
+      })
     } catch (e) {
       setError("Could not rate jobs.")
     } finally {
