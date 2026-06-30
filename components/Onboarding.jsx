@@ -1,4 +1,4 @@
-import { useState, useRef } from "react"
+﻿import { useState, useRef } from "react"
 
 const INDUSTRIES = ["Tech", "Consultancy", "Finance", "Logistics", "E-commerce", "Healthcare"]
 
@@ -56,7 +56,7 @@ export default function Onboarding({ onComplete, parseResume, loading }) {
         <div style={s.logo}>recon</div>
         <div style={s.steps}>
           {[1, 2].map(n => (
-            <div key={n} style={{ ...s.step, background: step >= n ? "#1A73E8" : "#E4E6EB" }} />
+            <div key={n} style={{ ...s.step, background: step >= n ? "#16825C" : "#E4E6EB" }} />
           ))}
         </div>
 
@@ -166,7 +166,7 @@ const s = {
   },
   row: { display: "flex", gap: 8 },
   primary: {
-    background: "#1A73E8", color: "#fff", border: "none",
+    background: "#16825C", color: "#fff", border: "none",
     borderRadius: 8, padding: "10px 20px", fontSize: 13,
     fontWeight: 600, cursor: "pointer",
   },
@@ -183,7 +183,7 @@ const s = {
     color: "#65676B", padding: "5px 14px", fontSize: 12, cursor: "pointer",
   },
   tagOn: {
-    background: "#EBF3FD", border: "1.5px solid #1A73E8", color: "#1A73E8",
+    background: "#ECFDF5", border: "1.5px solid #16825C", color: "#16825C",
   },
   dqTag: {
     background: "#FEF2F2", border: "1.5px solid #FECACA", borderRadius: 20,

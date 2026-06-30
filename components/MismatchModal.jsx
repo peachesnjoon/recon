@@ -1,4 +1,4 @@
-export default function MismatchModal({ resumeRoles, searchRoles, onResumeHelp, onSearchAnyway }) {
+﻿export default function MismatchModal({ resumeRoles, searchRoles, onResumeHelp, onSearchAnyway }) {
   const resumeStr = resumeRoles.slice(0, 3).join(", ")
   const searchStr = searchRoles.join(", ")
   return (
@@ -31,5 +31,5 @@ const s = {
   actions: { display: "flex", gap: 10, justifyContent: "center" },
   helpBtn: { background: "#F5F6F7", color: "#BCC0C4", border: "1px solid #E4E6EB", borderRadius: 8, padding: "10px 18px", fontSize: 13, fontWeight: 600, cursor: "not-allowed", display: "flex", alignItems: "center", gap: 6 },
   soon: { fontSize: 9, background: "#E4E6EB", color: "#65676B", borderRadius: 10, padding: "2px 6px", fontWeight: 700, textTransform: "uppercase" },
-  dismissBtn: { background: "#1A73E8", color: "#fff", border: "none", borderRadius: 8, padding: "10px 18px", fontSize: 13, fontWeight: 600, cursor: "pointer" },
+  dismissBtn: { background: "#16825C", color: "#fff", border: "none", borderRadius: 8, padding: "10px 18px", fontSize: 13, fontWeight: 600, cursor: "pointer" },
 }

@@ -1,4 +1,4 @@
-import { useState } from "react"
+﻿import { useState } from "react"
 
 export default function FitPreferencesModal({ onConfirm, onSkip, initialPrefs }) {
   const [weightBasis, setWeightBasis] = useState(initialPrefs?.weightBasis || "both")
@@ -14,7 +14,7 @@ export default function FitPreferencesModal({ onConfirm, onSkip, initialPrefs })
         <div style={t.toggleLabel}>{label}</div>
         {sub && <div style={t.toggleSub}>{sub}</div>}
       </div>
-      <div style={{ ...t.track, background: value ? "#1A73E8" : "#E4E6EB" }}>
+      <div style={{ ...t.track, background: value ? "#16825C" : "#E4E6EB" }}>
         <div style={{ ...t.thumb, transform: value ? "translateX(16px)" : "translateX(0)" }} />
       </div>
     </div>
@@ -22,7 +22,7 @@ export default function FitPreferencesModal({ onConfirm, onSkip, initialPrefs })
 
   const Radio = ({ value, current, onChange, label, sub }) => (
     <div style={{ ...t.radioRow, cursor: "pointer" }} onClick={() => onChange(value)}>
-      <div style={{ ...t.radioOuter, borderColor: current === value ? "#1A73E8" : "#D1D5DB" }}>
+      <div style={{ ...t.radioOuter, borderColor: current === value ? "#16825C" : "#D1D5DB" }}>
         {current === value && <div style={t.radioInner} />}
       </div>
       <div>
@@ -127,7 +127,7 @@ const t = {
   radioGroup: { display: "flex", flexDirection: "column", gap: 12 },
   radioRow: { display: "flex", alignItems: "flex-start", gap: 12 },
   radioOuter: { width: 18, height: 18, borderRadius: "50%", border: "2px solid", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 1 },
-  radioInner: { width: 8, height: 8, borderRadius: "50%", background: "#1A73E8" },
+  radioInner: { width: 8, height: 8, borderRadius: "50%", background: "#16825C" },
   radioLabel: { fontSize: 14, fontWeight: 600, color: "#1C1E21" },
   radioSub: { fontSize: 12, color: "#65676B", marginTop: 1 },
   toggleRow: { display: "flex", alignItems: "center", gap: 16 },
@@ -137,5 +137,5 @@ const t = {
   thumb: { position: "absolute", top: 2, left: 2, width: 16, height: 16, borderRadius: "50%", background: "#fff", transition: "transform 0.2s", boxShadow: "0 1px 3px rgba(0,0,0,0.2)" },
   footer: { padding: "20px 24px", display: "flex", gap: 12, justifyContent: "flex-end", borderTop: "1px solid #F0F2F5" },
   skipBtn: { background: "none", border: "1px solid #E4E6EB", borderRadius: 8, color: "#65676B", padding: "10px 18px", fontSize: 13, cursor: "pointer" },
-  confirmBtn: { background: "#1A73E8", color: "#fff", border: "none", borderRadius: 8, padding: "10px 20px", fontSize: 13, fontWeight: 600, cursor: "pointer" },
+  confirmBtn: { background: "#16825C", color: "#fff", border: "none", borderRadius: 8, padding: "10px 20px", fontSize: 13, fontWeight: 600, cursor: "pointer" },
 }

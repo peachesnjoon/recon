@@ -1,4 +1,4 @@
-import { useState } from "react"
+﻿import { useState } from "react"
 
 export default function InviteGate({ onUnlock }) {
   const [code, setCode] = useState("")
@@ -69,9 +69,9 @@ const s = {
     border: "1.5px solid #E4E6EB", fontSize: 14, outline: "none",
     color: "#1C1E21", background: "#fff",
   },
-  hintLink: { color: "#1A73E8", textDecoration: "none", fontWeight: 600 },
+  hintLink: { color: "#16825C", textDecoration: "none", fontWeight: 600 },
   btn: {
-    background: "#1A73E8", color: "#fff", border: "none",
+    background: "#16825C", color: "#fff", border: "none",
     borderRadius: 8, padding: "10px 20px", fontSize: 14,
     fontWeight: 600, cursor: "pointer",
   },

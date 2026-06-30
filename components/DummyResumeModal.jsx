@@ -1,4 +1,4 @@
-export default function DummyResumeModal({ onPick, onClose }) {
+﻿export default function DummyResumeModal({ onPick, onClose }) {
   return (
     <div style={s.overlay} onClick={onClose}>
       <div style={s.modal} onClick={e => e.stopPropagation()}>
@@ -57,5 +57,5 @@ const s = {
   optionDesc: { fontSize: 12, color: "#65676B", lineHeight: 1.4, marginTop: 2 },
   optionActions: { display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 },
   viewLink: { fontSize: 12, color: "#65676B", textDecoration: "underline", cursor: "pointer" },
-  useBtn: { background: "#1A73E8", color: "#fff", border: "none", borderRadius: 8, padding: "8px 16px", fontSize: 13, fontWeight: 600, cursor: "pointer" },
+  useBtn: { background: "#16825C", color: "#fff", border: "none", borderRadius: 8, padding: "8px 16px", fontSize: 13, fontWeight: 600, cursor: "pointer" },
 }

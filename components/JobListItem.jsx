@@ -1,6 +1,5 @@
-import { useState } from "react"
+﻿import { useState } from "react"
 import { categoryColor, categoryBg, formatDate } from "../lib/filters"
-import { getCompanyTier, TIER_LABELS, TIER_COLORS } from "../lib/companyTiers"
 
 const DOMAIN_MAP = {
   "shopee": "shopee.com", "grab": "grab.com", "sea limited": "sea.com",
@@ -87,84 +86,61 @@ export function FaviconLogo({ company, size = 44 }) {
 export default function JobListItem({ job, rating, selected, onClick }) {
   const cat = rating?.category
   const date = formatDate(job.postedAt)
-  const tier = getCompanyTier(job.company)
-  const reqs = [
-    ...(job.jdSummary?.hardNos || []),
-    ...(job.jdSummary?.goodToHave || []),
-  ].slice(0, 3)
-
   return (
     <div
       onClick={onClick}
       style={{
         ...s.item,
-        background: selected ? "#F0F7FF" : "#fff",
-        borderLeft: `3px solid ${selected ? "#1A73E8" : "transparent"}`,
+        background: selected ? "#ECFDF5" : "#fff",
+        borderLeft: `3px solid ${selected ? "#16825C" : "transparent"}`,
       }}
     >
       <div style={s.inner}>
-        <FaviconLogo company={job.company} size={44} />
+        <FaviconLogo company={job.company} size={38} />
         <div style={s.content}>
 
-          {/* Title + fit badge */}
+          {/* Title + actions */}
           <div style={s.titleRow}>
-            <span style={{ ...s.title, color: selected ? "#1A73E8" : "#1C1E21" }}>
-              {job.title}
-            </span>
+            <span style={s.title}>{job.title}</span>
+            <div style={s.titleActions}>
+              {date && <span style={s.date}>{date}</span>}
+              <span style={s.arrow}>›</span>
+            </div>
+          </div>
+
+          {/* Company */}
+          <div style={s.company}>{job.company}</div>
+
+          {/* Salary — prominent */}
+          {isValid(job.salary) && (
+            <div style={s.salary}>{job.salary}</div>
+          )}
+
+          {/* Pills: job type + industry + fit */}
+          <div style={s.metaRow}>
+            <span style={s.metaTag}>{job.jobType || "Full Time"}</span>
+            {isValid(job.jdSummary?.industry) && (
+              <span style={{ ...s.metaTag, color: "#16825C", background: "#ECFDF5", borderColor: "#A7F3D0" }}>
+                {job.jdSummary.industry}
+              </span>
+            )}
             {cat && (
               <span style={{
-                fontSize: 10, fontWeight: 600, padding: "2px 8px",
-                borderRadius: 10, whiteSpace: "nowrap", flexShrink: 0,
+                ...s.metaTag, border: "none",
                 color: categoryColor(cat), background: categoryBg(cat),
               }}>{cat}</span>
             )}
           </div>
 
-          {/* Company + tier + date */}
-          <div style={s.companyRow}>
-            <span style={s.company}>{job.company}</span>
-            <div style={{ display: "flex", alignItems: "center", gap: 4, flexShrink: 0 }}>
-              {tier && (
-                <span style={{
-                  fontSize: 9, fontWeight: 700, padding: "2px 6px", borderRadius: 4,
-                  color: TIER_COLORS[tier].color,
-                  background: TIER_COLORS[tier].background,
-                  border: `1px solid ${TIER_COLORS[tier].border}`,
-                  letterSpacing: 0.3,
-                }}>
-                  {TIER_LABELS[tier]}
-                </span>
-              )}
-              {date && <span style={s.date}>{date}</span>}
-            </div>
-          </div>
-
-          {/* Meta tags */}
-          <div style={s.metaRow}>
-            <span style={s.metaTag}>{job.jobType || "Full Time"}</span>
-            {isValid(job.salary) && (
-              <span style={{ ...s.metaTag, color: "#16A34A", fontWeight: 700, background: "#F0FFF4", borderColor: "#BBF7D0" }}>
-                {job.salary}
-              </span>
-            )}
-            {isValid(job.jdSummary?.yoe) && (
-              <span style={s.metaTag}>{job.jdSummary.yoe}</span>
-            )}
-            {isValid(job.jdSummary?.industry) && (
-              <span style={{ ...s.metaTag, color: "#4F46E5", background: "#EEF2FF", borderColor: "#C7D2FE" }}>
-                {job.jdSummary.industry}
-              </span>
-            )}
-          </div>
-
-          {/* Requirements */}
-          {reqs.length > 0 && (
-            <div style={s.reqList}>
-              {reqs.map((req, i) => (
-                <div key={i} style={s.reqItem}>· {shorten(req)}</div>
-              ))}
+          {/* YOE + location row */}
+          {(isValid(job.jdSummary?.yoe) || isValid(job.location)) && (
+            <div style={s.infoRow}>
+              {isValid(job.jdSummary?.yoe) && <span>⏱ {job.jdSummary.yoe}</span>}
+              {isValid(job.jdSummary?.yoe) && isValid(job.location) && <span style={s.dot}>·</span>}
+              {isValid(job.location) && <span>📍 {job.location}</span>}
             </div>
           )}
+
 
         </div>
       </div>
@@ -174,21 +150,25 @@ export default function JobListItem({ job, rating, selected, onClick }) {
 
 const s = {
   item: {
-    padding: "12px 16px", borderBottom: "1px solid #F0F2F5",
+    padding: "12px 14px 12px 16px", borderBottom: "1px solid #F0F2F5",
     cursor: "pointer", transition: "background 0.1s",
   },
-  inner: { display: "flex", gap: 12, alignItems: "flex-start" },
+  inner: { display: "flex", gap: 10, alignItems: "flex-start" },
   content: { flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 3 },
-  titleRow: { display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 },
-  title: { fontSize: 13, fontWeight: 650, lineHeight: 1.3 },
-  companyRow: { display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 },
+  titleRow: { display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 6 },
+  title: { fontSize: 13, fontWeight: 650, color: "#1C1E21", lineHeight: 1.3, flex: 1 },
+  titleActions: { display: "flex", alignItems: "center", gap: 6, flexShrink: 0 },
+  date: { fontSize: 10, color: "#9CA3AF" },
+  arrow: { fontSize: 16, color: "#C4C9D4", fontWeight: 300 },
   company: { fontSize: 12, color: "#65676B" },
-  date: { fontSize: 10, color: "#9CA3AF", flexShrink: 0 },
+  salary: { fontSize: 13, fontWeight: 700, color: "#16825C" },
   metaRow: { display: "flex", alignItems: "center", flexWrap: "wrap", gap: 4, marginTop: 1 },
   metaTag: {
     fontSize: 10, color: "#65676B", background: "#F5F6F7",
     border: "1px solid #E4E6EB", padding: "2px 7px", borderRadius: 4,
   },
-  reqList: { display: "flex", flexDirection: "column", gap: 1, marginTop: 2 },
-  reqItem: { fontSize: 11, color: "#65676B", lineHeight: 1.4 },
+  infoRow: { display: "flex", alignItems: "center", gap: 4, fontSize: 11, color: "#65676B", flexWrap: "wrap" },
+  dot: { color: "#D1D5DB" },
+  signalRow: { display: "flex", alignItems: "center", flexWrap: "wrap", gap: 2, fontSize: 11, color: "#65676B" },
+  signalLabel: { fontWeight: 600, color: "#9CA3AF", marginRight: 2 },
 }

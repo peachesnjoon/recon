@@ -1,4 +1,4 @@
-import { useState } from "react"
+﻿import { useState } from "react"
 
 export default function RoleChoiceModal({
   sentence, roles, focused, initialSelected, initialManual,
@@ -134,12 +134,12 @@ const s = {
   header: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 },
   title: { fontSize: 16, fontWeight: 700, color: "#1C1E21" },
   close: { background: "none", border: "none", fontSize: 16, color: "#9CA3AF", cursor: "pointer", padding: 4 },
-  signal: { fontSize: 13, color: "#374151", lineHeight: 1.5, margin: "0 0 14px", background: "#F0F7FF", borderRadius: 8, padding: "10px 12px", borderLeft: "3px solid #1A73E8" },
+  signal: { fontSize: 13, color: "#374151", lineHeight: 1.5, margin: "0 0 14px", background: "#ECFDF5", borderRadius: 8, padding: "10px 12px", borderLeft: "3px solid #16825C" },
   warnNote: { fontSize: 12, color: "#92400E", background: "#FEF3C7", borderRadius: 8, padding: "8px 12px", marginBottom: 14, lineHeight: 1.4 },
   sectionLabel: { fontSize: 10, fontWeight: 700, color: "#9CA3AF", textTransform: "uppercase", letterSpacing: 0.6, marginBottom: 8 },
   roleList: { display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 14 },
   rolePill: { background: "#fff", border: "1.5px solid #E4E6EB", borderRadius: 20, color: "#65676B", padding: "6px 14px", fontSize: 13, cursor: "pointer", fontWeight: 500 },
-  rolePillOn: { background: "#EBF3FD", border: "1.5px solid #1A73E8", color: "#1A73E8", fontWeight: 600 },
+  rolePillOn: { background: "#ECFDF5", border: "1.5px solid #16825C", color: "#16825C", fontWeight: 600 },
   manualPillWrap: { display: "inline-flex", alignItems: "center", gap: 2 },
   removeManual: { background: "none", border: "none", color: "#BCC0C4", fontSize: 11, cursor: "pointer", padding: "0 4px" },
   customRow: { display: "flex", gap: 8, marginBottom: 18 },
@@ -147,6 +147,6 @@ const s = {
   addBtn: { background: "#F5F6F7", border: "1px solid #E4E6EB", borderRadius: 8, color: "#65676B", padding: "8px 16px", fontSize: 13, fontWeight: 600, cursor: "pointer", flexShrink: 0 },
   btnRow: { display: "flex", gap: 10 },
   skipBtn: { flex: "0 0 auto", background: "#F5F6F7", color: "#65676B", border: "1px solid #E4E6EB", borderRadius: 8, padding: "11px 18px", fontSize: 14, fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap" },
-  confirmBtn: { flex: 1, background: "#1A73E8", color: "#fff", border: "none", borderRadius: 8, padding: "11px 0", fontSize: 14, fontWeight: 600, cursor: "pointer" },
+  confirmBtn: { flex: 1, background: "#16825C", color: "#fff", border: "none", borderRadius: 8, padding: "11px 0", fontSize: 14, fontWeight: 600, cursor: "pointer" },
   confirmBtnDisabled: { background: "#BCC0C4", cursor: "not-allowed" },
 }

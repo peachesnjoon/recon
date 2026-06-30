@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+﻿import { useState, useEffect } from "react"
 
 function Section({ label, defaultOpen = false, count, children }) {
   const [open, setOpen] = useState(defaultOpen)
@@ -77,7 +77,7 @@ const JOB_TYPES = ["Full Time", "Part Time", "Contract", "Internship", "Freelanc
 const INDUSTRIES = ["Tech", "Consultancy", "Finance", "Logistics", "E-commerce", "Healthcare"]
 
 const DEFAULT_FILTERS = {
-  industries: [...INDUSTRIES],
+  industries: [],
   companyType: "Both",
   category: "All",
   languages: { selected: [], mode: "exclude_any" },
@@ -141,7 +141,7 @@ export default function FilterPanel({ filters, fitPreferences, onChange, totalJo
     draft.certification !== "any" ||
     draft.yoe?.[0] > 0 || draft.yoe?.[1] < 20 ||
     draft.category !== "All" ||
-    draft.industries?.length < INDUSTRIES.length ||
+    draft.industries?.length > 0 ||
     draft.companyType !== "Both"
 
   return (
@@ -168,11 +168,11 @@ export default function FilterPanel({ filters, fitPreferences, onChange, totalJo
       )}
 
       {/* 2. Experience */}
-      <Section label="Experience (years)" count={draft.yoe?.[0] > 0 || draft.yoe?.[1] < 20 ? 1 : 0}>
+      <Section label="Experience (years)" defaultOpen={false} count={draft.yoe?.[0] > 0 || draft.yoe?.[1] < 20 ? 1 : 0}>
         {fitPreferences && !fitPreferences.flexibleYoe ? (
           <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
             <RangeSlider min={0} max={20} value={draft.yoe || [0, 20]} onChange={v => updateDraft("yoe", v)} />
-            <div style={{ fontSize: 10, color: "#1A73E8" }}>⚙ Locked by Strict YOE preference</div>
+            <div style={{ fontSize: 10, color: ACCENT }}>⚙ Locked by Strict YOE preference</div>
           </div>
         ) : (
           <RangeSlider min={0} max={20} value={draft.yoe || [0, 20]} onChange={v => updateDraft("yoe", v)} />
@@ -180,7 +180,7 @@ export default function FilterPanel({ filters, fitPreferences, onChange, totalJo
       </Section>
 
       {/* 3. Industry */}
-      <Section label="Industry" defaultOpen={true} count={draft.industries?.length < INDUSTRIES.length ? 1 : 0}>
+      <Section label="Industry" defaultOpen={false} count={draft.industries?.length > 0 ? 1 : 0}>
         <TagGroup
           options={INDUSTRIES}
           selected={draft.industries || []}
@@ -194,7 +194,7 @@ export default function FilterPanel({ filters, fitPreferences, onChange, totalJo
       </Section>
 
       {/* 4. Company type */}
-      <Section label="Company type" defaultOpen={true} count={draft.companyType !== "Both" ? 1 : 0}>
+      <Section label="Company type" defaultOpen={false} count={draft.companyType !== "Both" ? 1 : 0}>
         <TagGroup
           options={["Startup", "MNC", "Both"]}
           selected={[draft.companyType]}
@@ -283,32 +283,36 @@ export default function FilterPanel({ filters, fitPreferences, onChange, totalJo
   )
 }
 
+const ACCENT = "#16825C"
+const ACCENT_TINT = "#ECFDF5"
+const ACCENT_BORDER = "#DDD6FE"
+
 const s = {
   wrap: { display: "flex", flexDirection: "column", overflowY: "auto", flex: 1 },
   header: { display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 16px 8px", flexShrink: 0 },
   headerLeft: { display: "flex", flexDirection: "column", gap: 2 },
   headerLabel: { fontSize: 13, fontWeight: 700, color: "#1C1E21" },
   jobCount: { fontSize: 11, color: "#9CA3AF" },
-  clearBtn: { background: "none", border: "none", color: "#1A73E8", fontSize: 11, fontWeight: 600, cursor: "pointer", padding: 0 },
-  section: { borderTop: "1px solid #F0F2F5" },
+  clearBtn: { background: "none", border: "none", color: ACCENT, fontSize: 11, fontWeight: 600, cursor: "pointer", padding: 0 },
+  section: { borderTop: "1px solid #F2F2F5" },
   sectionHeader: { width: "100%", display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 16px", background: "none", border: "none", cursor: "pointer", textAlign: "left" },
   sectionLabel: { fontSize: 11, fontWeight: 700, color: "#65676B", textTransform: "uppercase", letterSpacing: 0.8 },
   sectionRight: { display: "flex", alignItems: "center", gap: 6 },
-  activeDot: { width: 6, height: 6, borderRadius: "50%", background: "#1A73E8" },
+  activeDot: { width: 6, height: 6, borderRadius: "50%", background: ACCENT },
   chevron: { fontSize: 10, color: "#9CA3AF" },
   sectionBody: { padding: "0 16px 14px", display: "flex", flexDirection: "column", gap: 10 },
   tagGroup: { display: "flex", flexWrap: "wrap", gap: 6 },
-  tag: { background: "#fff", border: "1.5px solid #E4E6EB", borderRadius: 20, color: "#65676B", padding: "4px 12px", fontSize: 11, cursor: "pointer", fontWeight: 500 },
-  tagOn: { background: "#EBF3FD", border: "1.5px solid #1A73E8", color: "#1A73E8", fontWeight: 600 },
+  tag: { background: "#F9FAFB", border: "1px solid #E4E6EB", borderRadius: 20, color: "#65676B", padding: "3px 10px", fontSize: 11, cursor: "pointer", fontWeight: 500, fontFamily: "inherit" },
+  tagOn: { background: "#16825C", border: "1.5px solid #16825C", color: "#fff", fontWeight: 600 },
   modeRow: { display: "flex", gap: 6, flexWrap: "wrap" },
-  modeBtn: { background: "#F5F6F7", border: "1px solid transparent", borderRadius: 6, color: "#65676B", padding: "4px 10px", fontSize: 11, cursor: "pointer" },
+  modeBtn: { background: "#F5F6F7", border: "1px solid transparent", borderRadius: 6, color: "#65676B", padding: "4px 10px", fontSize: 11, cursor: "pointer", fontFamily: "inherit" },
   modeBtnOn: { background: "#1C1E21", color: "#fff" },
   hint: { fontSize: 10, color: "#BCC0C4", lineHeight: 1.4, minHeight: 14 },
   rangeWrap: { display: "flex", flexDirection: "column", gap: 6 },
   rangeLabels: { display: "flex", justifyContent: "space-between" },
   rangeVal: { fontSize: 12, fontWeight: 600, color: "#1C1E21" },
   sliderTrack: { position: "relative", height: 20 },
-  slider: { width: "100%", position: "absolute", top: 0, left: 0, accentColor: "#1A73E8", cursor: "pointer" },
-  applyWrap: { padding: "12px 16px", borderTop: "1px solid #E4E6EB", background: "#fff", flexShrink: 0, position: "sticky", bottom: 0 },
-  applyBtn: { width: "100%", background: "#1A73E8", color: "#fff", border: "none", borderRadius: 8, padding: "9px 0", fontSize: 13, fontWeight: 600, cursor: "pointer" },
+  slider: { width: "100%", position: "absolute", top: 0, left: 0, cursor: "pointer" },
+  applyWrap: { padding: "12px 16px", borderTop: "1px solid #EBEBEF", background: "#fff", flexShrink: 0, position: "sticky", bottom: 0 },
+  applyBtn: { width: "100%", background: ACCENT, color: "#fff", border: "none", borderRadius: 8, padding: "9px 0", fontSize: 13, fontWeight: 600, cursor: "pointer" },
 }

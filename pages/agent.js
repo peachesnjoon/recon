@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react"
+﻿import { useState, useEffect, useRef } from "react"
 import { categoryColor, categoryBg } from "../lib/filters"
 
 export default function AgentPage() {
@@ -74,7 +74,7 @@ export default function AgentPage() {
         <a href="/" style={s.logo}>recon</a>
         <div style={s.navLinks}>
           <a href="/" style={s.navLink}>Job Search</a>
-          <span style={{ ...s.navLink, color: "#1A73E8", fontWeight: 700, borderBottom: "2px solid #1A73E8" }}>AI Agent</span>
+          <span style={{ ...s.navLink, color: "#12DF8B", fontWeight: 700, borderBottom: "2px solid #16825C" }}>AI Agent</span>
         </div>
       </div>
 
@@ -86,7 +86,7 @@ export default function AgentPage() {
             <div style={s.sectionSub}>Upload a screenshot of any job listing — LinkedIn, company site, anywhere.</div>
 
             <div
-              style={{ ...s.dropzone, borderColor: dragOver ? "#1A73E8" : image ? "#16A34A" : "#E4E6EB", background: dragOver ? "#EBF3FD" : "#FAFAFA" }}
+              style={{ ...s.dropzone, borderColor: dragOver ? "#16825C" : image ? "#16A34A" : "#E4E6EB", background: dragOver ? "#ECFDF5" : "#FAFAFA" }}
               onDragOver={(e) => { e.preventDefault(); setDragOver(true) }}
               onDragLeave={() => setDragOver(false)}
               onDrop={handleDrop}
@@ -229,10 +229,10 @@ export default function AgentPage() {
 
 const s = {
   page: { minHeight: "100vh", fontFamily: "'Inter', sans-serif", background: "#F5F6F7", display: "flex", flexDirection: "column" },
-  nav: { background: "#fff", borderBottom: "1px solid #E4E6EB", padding: "0 24px", height: 52, display: "flex", alignItems: "center", gap: 24, flexShrink: 0 },
-  logo: { fontSize: 17, fontWeight: 800, color: "#1C1E21", letterSpacing: "-0.5px", textDecoration: "none" },
-  navLinks: { display: "flex", gap: 4 },
-  navLink: { fontSize: 13, fontWeight: 500, color: "#65676B", textDecoration: "none", padding: "4px 10px", borderRadius: 6 },
+  nav: { background: "#000D19", borderBottom: "1px solid #1a2e40", padding: "0 24px", height: 56, display: "flex", alignItems: "center", gap: 24, flexShrink: 0 },
+  logo: { fontSize: 18, fontWeight: 800, color: "#fff", letterSpacing: "-0.5px", textDecoration: "none" },
+  navLinks: { display: "flex", gap: 0, borderLeft: "1px solid rgba(255,255,255,0.1)", paddingLeft: 16, marginLeft: 8, height: 56, alignItems: "stretch" },
+  navLink: { fontSize: 13, fontWeight: 600, color: "#B2B7BC", textDecoration: "none", padding: "0 12px", display: "flex", alignItems: "center", borderBottom: "2px solid transparent" },
   body: { display: "flex", flex: 1, gap: 0, maxWidth: 1100, width: "100%", margin: "0 auto", padding: 24, gap: 24 },
   leftPane: { width: 380, flexShrink: 0, display: "flex", flexDirection: "column", gap: 20 },
   rightPane: { flex: 1, background: "#fff", borderRadius: 12, border: "1px solid #E4E6EB", overflow: "auto" },
@@ -255,9 +255,9 @@ const s = {
   resumeName: { fontSize: 13, fontWeight: 600, color: "#1C1E21" },
   resumeSub: { fontSize: 11, color: "#65676B" },
   noResume: { fontSize: 12, color: "#9CA3AF", lineHeight: 1.5 },
-  inlineLink: { color: "#1A73E8" },
+  inlineLink: { color: "#16825C" },
   analyseBtn: {
-    background: "#1A73E8", color: "#fff", border: "none", borderRadius: 8,
+    background: "#16825C", color: "#fff", border: "none", borderRadius: 8,
     padding: "12px 0", fontSize: 14, fontWeight: 600, cursor: "pointer", width: "100%",
   },
   errorMsg: { fontSize: 12, color: "#DC2626", background: "#FFF5F5", padding: "8px 12px", borderRadius: 6 },

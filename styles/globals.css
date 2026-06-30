@@ -1,13 +1,12 @@
-:root {
-  --background: #ffffff;
+﻿:root {
+  --background: #E8E8EE;
   --foreground: #171717;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --accent: #16825C;
+  --accent-start: #16825C;
+  --accent-end: #16825C;
+  --accent-gradient: linear-gradient(135deg, #16825C, #16825C);
+  --accent-tint: #ECFDF5;
+  --accent-border: #A7F3D0;
 }
 
 html,
@@ -19,7 +18,7 @@ body {
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -35,8 +34,6 @@ a {
   text-decoration: none;
 }
 
-@media (prefers-color-scheme: dark) {
-  html {
-    color-scheme: dark;
-  }
+input[type="range"] {
+  accent-color: #16825C;
 }

@@ -17,25 +17,28 @@ export default async function handler(req, res) {
       },
       body: JSON.stringify({
         model: "claude-haiku-4-5",
-        max_tokens: 6000,
+        max_tokens: 8000,
         system: `You summarise job descriptions. Return ONLY valid JSON, no markdown, no explanation.`,
         messages: [{
           role: "user",
-          content: `Summarise each JD into max 3 bullets each. Return JSON keyed by job id:
+          content: `Summarise each JD. Return JSON keyed by job id:
 {
   "job_id": {
-    "yoe": string,  // e.g. "3+ years" or "minimum 4 years" — always include the word "years"
+    "yoe": string,  // years of experience required — read the full JD carefully, e.g. "3+ years", "minimum 5 years". If not mentioned, return null.
     "industry": string,  // be specific — infer from the actual job content, not just category. e.g. "HR Tech / AI Recruiting", "Maritime Logistics", "B2B Fintech", "GovTech / Smart Nation". Max 4 words.
-    "hardNos": string[],
-    "goodToHave": string[]
+    "hardNos": string[],  // up to 5 hard requirements from the JD
+    "goodToHave": string[]  // up to 3 nice-to-have items
   }
 }
 
-Jobs (keep JD text under 500 chars each to stay within limits):
-${JSON.stringify(batch.map(j => ({
-  id: j.id,
-  jd: (j.jd || "").slice(0, 300)
-})))}`
+Jobs:
+${JSON.stringify(batch.map(j => {
+  const jd = j.jd || ""
+  const text = jd.length > 2000
+    ? jd.slice(0, 800) + "\n...\n" + jd.slice(-1200)
+    : jd
+  return { id: j.id, jd: text }
+}))}`
         }],
       }),
     })

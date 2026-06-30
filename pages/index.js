@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react"
+﻿import { useState, useEffect, useRef } from "react"
 import { useJobSearch } from "../hooks/useJobSearch"
 import { applyFilters, categoryColor, categoryBg, categoryEmoji, formatDate } from "../lib/filters"
 import InviteGate from "../components/InviteGate"
@@ -43,9 +43,11 @@ export default function Home() {
   const [mismatchDismissed, setMismatchDismissed] = useState(false)
   const [showMismatchModal, setShowMismatchModal] = useState(false)
   const [searchKey, setSearchKey] = useState(0)
+  const [sortOrder, setSortOrder] = useState("relevant")
+  const [showAbout, setShowAbout] = useState(false)
   const uploadInputRef = useRef(null)
   const [filters, setFilters] = useState({
-    industries: [...INDUSTRIES],
+    industries: [],
     companyType: "Both",
     category: "All",
     languages: { selected: [], mode: "exclude_any" },
@@ -269,6 +271,14 @@ export default function Home() {
   }, [matchState, mismatchDismissed])
 
   const visibleJobs = applyFilters(jobs, ratings, filters)
+  const topHirers = (() => {
+    const counts = {}
+    visibleJobs.forEach(j => { if (j.company) counts[j.company] = (counts[j.company] || 0) + 1 })
+    return Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 3)
+  })()
+  const sortedJobs = sortOrder === "date"
+    ? [...visibleJobs].sort((a, b) => new Date(b.postedAt || 0) - new Date(a.postedAt || 0))
+    : visibleJobs
   const selectedJob = jobs.find(j => j.id === selectedJobId) || null
   const isAnyLoading = loading.scraping || backgroundLoading
 
@@ -332,6 +342,10 @@ export default function Home() {
     },
     isRating: loading.rating,
     onTrialClick: () => setShowDummyModal(true),
+    resumeRoles,
+    activeRoles,
+    manualRoles,
+    matchState,
   }
 
   const jobDetailProps = {
@@ -384,41 +398,14 @@ export default function Home() {
       {roleModalEl}
       {mismatchModalEl}
       <input ref={uploadInputRef} type="file" accept="application/pdf" style={{ display: "none" }} onChange={e => handleUploadFile(e.target.files[0])} />
+      {showAbout && <AboutModal onClose={() => setShowAbout(false)} />}
       <div style={s.nav}>
-        <div style={{ display: "flex", alignItems: "center", gap: 0, flexShrink: 0 }}>
+        <div style={{ display: "flex", alignItems: "center", flexShrink: 0, height: "100%" }}>
           <div style={s.navLogo}>recon</div>
           <div style={s.screenTabs}>
             <span style={{ ...s.screenTab, ...s.screenTabActive }}>Job Search</span>
-            <a href="/agent" style={{ ...s.screenTab, color: "#65676B", textDecoration: "none" }}>AI Agent</a>
+            <a href="/agent" style={{ ...s.screenTab, textDecoration: "none" }}>AI Agent</a>
           </div>
-        </div>
-        <div style={s.searchGroup}>
-          <div style={s.searchField}>
-            <span style={s.searchFieldLabel}>Role</span>
-            <input style={s.searchInput} value={roleInput}
-              onChange={e => setRoleInput(e.target.value)}
-              onKeyDown={e => e.key === "Enter" && handleSearch()}
-              placeholder="Product Manager, BA..." />
-          </div>
-          <div style={s.searchDivider} />
-          <div style={s.searchField}>
-            <span style={s.searchFieldLabel}>Location</span>
-            <input style={s.searchInput} value={locationInput}
-              onChange={e => setLocationInput(e.target.value)}
-              onKeyDown={e => e.key === "Enter" && handleSearch()}
-              placeholder="Singapore" />
-          </div>
-          <div style={s.searchDivider} />
-          <div style={s.searchField}>
-            <span style={s.searchFieldLabel}>Keyword</span>
-            <input style={s.searchInput} value={keywordInput}
-              onChange={e => setKeywordInput(e.target.value)}
-              onKeyDown={e => e.key === "Enter" && handleSearch()}
-              placeholder="AI, fintech, SaaS..." />
-          </div>
-          <button style={s.searchBtn} onClick={() => handleSearch()} disabled={loading.scraping}>
-            {loading.scraping ? "Searching..." : "Search"}
-          </button>
         </div>
         <div style={s.navRight}>
           {resumeData && <div style={s.resumeBadge}>✓ {resumeData.name}</div>}
@@ -429,7 +416,43 @@ export default function Home() {
             </div>
           )}
           {loading.parsing && <div style={s.pill}>⟳ Parsing...</div>}
+          <button style={s.aboutBtn} onClick={() => setShowAbout(true)}>About</button>
+          <div style={s.navAvatar}>N</div>
         </div>
+      </div>
+
+      <div style={s.filterBar}>
+        <FilterField
+          label="Role"
+          placeholder="e.g. Product Manager"
+          values={roleInput.split(",").map(s => s.trim()).filter(Boolean)}
+          onAdd={v => setRoleInput(p => p.trim() ? p.trim() + ", " + v : v)}
+          onRemove={v => setRoleInput(roleInput.split(",").map(s => s.trim()).filter(s => s && s !== v).join(", "))}
+        />
+        <div style={s.filterDivider} />
+        <FilterField
+          label="Location"
+          placeholder="e.g. Singapore"
+          values={locationInput.split(",").map(s => s.trim()).filter(Boolean)}
+          onAdd={v => setLocationInput(p => p.trim() ? p.trim() + ", " + v : v)}
+          onRemove={v => setLocationInput(locationInput.split(",").map(s => s.trim()).filter(s => s && s !== v).join(", "))}
+        />
+        <div style={s.filterDivider} />
+        <FilterField
+          label="Keywords"
+          placeholder="e.g. AI, fintech"
+          values={keywordInput.split(",").map(s => s.trim()).filter(Boolean)}
+          onAdd={v => setKeywordInput(p => p.trim() ? p.trim() + ", " + v : v)}
+          onRemove={v => setKeywordInput(keywordInput.split(",").map(s => s.trim()).filter(s => s && s !== v).join(", "))}
+        />
+        <button style={s.searchBtn} onClick={() => handleSearch()} disabled={loading.scraping}>
+          {loading.scraping ? "Searching..." : "Search"}
+        </button>
+        {(roleInput || locationInput || keywordInput) && (
+          <button style={s.clearAllBtn} onClick={() => { setRoleInput(""); setLocationInput(""); setKeywordInput("") }}>
+            Clear all
+          </button>
+        )}
       </div>
 
       <div style={s.body}>
@@ -443,20 +466,40 @@ export default function Home() {
         <div style={{ ...s.listPane, position: "relative" }}>
           <MarketSnapshot key={searchKey} keywords={activeRoles[0] || null} visible={!loading.scraping} />
           <div style={s.listHeader}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              {loading.rating && (
-                <span style={{ fontSize: 13, display: "inline-block", animation: "spin 1s linear infinite", color: "#1A73E8" }}>⟳</span>
-              )}
-              <span style={s.listCount}>
-                {loading.scraping ? "Searching..." : loading.rating ? "Rating..." : `${visibleJobs.length}${jobs.length > visibleJobs.length ? ` of ${jobs.length}` : ""} jobs`}
-              </span>
-              {activeRoles.length > 0 && <RolePill roles={activeRoles} />}
+            <div style={s.listHeaderTop}>
+              <div style={{ fontSize: 13 }}>
+                {loading.scraping ? (
+                  <span style={{ color: "#9CA3AF" }}>Searching...</span>
+                ) : (
+                  <>
+                    <strong style={{ color: "#1C1E21" }}>{sortedJobs.length}</strong>
+                    {activeRoles.length > 0 && (
+                      <span style={{ color: "#1C1E21", fontWeight: 600 }}>{" "}{activeRoles[0]}</span>
+                    )}
+                    <span style={{ color: "#65676B" }}> jobs found</span>
+                    {loading.rating && (
+                      <span style={{ fontSize: 11, color: "#16825C", marginLeft: 8 }}>
+                        <span style={{ display: "inline-block", animation: "spin 1s linear infinite" }}>⟳</span>
+                        {" "}Rating
+                      </span>
+                    )}
+                  </>
+                )}
+              </div>
+              <select style={s.sortSelect} value={sortOrder} onChange={e => setSortOrder(e.target.value)}>
+                <option value="relevant">Most relevant</option>
+                <option value="date">Date posted</option>
+              </select>
             </div>
-            {backgroundLoading && !loading.scraping && (
-              <span style={s.loadingMore}>
-                <span style={{ display: "inline-block", animation: "spin 1s linear infinite" }}>⟳</span>
-                {" "}loading more
-              </span>
+            {topHirers.length > 0 && !loading.scraping && (
+              <div style={s.topHirers}>
+                <span style={s.topHirerLabel}>Top hirers:</span>
+                {topHirers.map(([company, count]) => (
+                  <span key={company} style={s.topHirerChip}>
+                    {company} <span style={{ color: "#16825C", fontWeight: 700 }}>{count}</span>
+                  </span>
+                ))}
+              </div>
             )}
           </div>
           <div style={s.listScroll}>
@@ -466,7 +509,7 @@ export default function Home() {
                 <div style={s.emptyListSub}>Try adjusting the filters on the left.</div>
               </div>
             )}
-            {visibleJobs.map(job => (
+            {sortedJobs.map(job => (
               <JobListItem key={job.id} job={job} rating={ratings[job.id]}
                 selected={selectedJobId === job.id} onClick={() => handleJobSelect(job.id)} />
             ))}
@@ -489,6 +532,148 @@ export default function Home() {
   )
 }
 
+function AboutModal({ onClose }) {
+  const features = [
+    { icon: "📄", title: "Resume AI", desc: "Upload your PDF — Claude parses your skills, experience, and career trajectory." },
+    { icon: "⭐", title: "Fit Scoring", desc: "Every listing is scored Strong Fit, Worth Exploring, or Low Priority against your profile." },
+    { icon: "📊", title: "Market Snapshot", desc: "See which companies are actively hiring and how postings shift week over week." },
+    { icon: "🤖", title: "AI Agent", desc: "Screenshot any job posting from LinkedIn or a company site for an instant fit breakdown." },
+  ]
+  return (
+    <div
+      style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.55)", zIndex: 200, display: "flex", alignItems: "center", justifyContent: "center", backdropFilter: "blur(3px)" }}
+      onClick={onClose}
+    >
+      <div
+        style={{ background: "#fff", borderRadius: 16, padding: "32px 28px", maxWidth: 460, width: "90%", display: "flex", flexDirection: "column", gap: 22, boxShadow: "0 24px 64px rgba(0,0,0,0.18)" }}
+        onClick={e => e.stopPropagation()}
+      >
+        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
+          <div>
+            <div style={{ fontSize: 26, fontWeight: 800, color: "#1C1E21", letterSpacing: "-0.8px" }}>recon</div>
+            <div style={{ fontSize: 12, color: "#9CA3AF", marginTop: 2 }}>Job intelligence for Singapore's market</div>
+          </div>
+          <button onClick={onClose} style={{ background: "none", border: "none", fontSize: 18, color: "#9CA3AF", cursor: "pointer", padding: "2px 4px", lineHeight: 1 }}>✕</button>
+        </div>
+
+        <p style={{ fontSize: 13, color: "#374151", lineHeight: 1.7, margin: 0 }}>
+          recon aggregates live job listings from <strong>MyCareersFuture</strong> and <strong>JobStreet</strong>, then uses Claude AI to score each role against your resume — so you spend time on jobs that actually fit, not ones you'll get filtered out of.
+        </p>
+
+        <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+          {features.map(({ icon, title, desc }) => (
+            <div key={title} style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
+              <div style={{ fontSize: 18, flexShrink: 0, width: 28, textAlign: "center", marginTop: 1 }}>{icon}</div>
+              <div>
+                <div style={{ fontSize: 13, fontWeight: 600, color: "#1C1E21", marginBottom: 2 }}>{title}</div>
+                <div style={{ fontSize: 12, color: "#65676B", lineHeight: 1.5 }}>{desc}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div style={{ borderTop: "1px solid #F0F2F5", paddingTop: 18, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div style={{ fontSize: 11, color: "#9CA3AF" }}>Built by Aalia Arshad</div>
+          <a
+            href="https://www.linkedin.com/in/aalia-a-875914201/"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "#0A66C2", color: "#fff", borderRadius: 7, padding: "8px 14px", textDecoration: "none", fontSize: 12, fontWeight: 600 }}
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+            Connect on LinkedIn
+          </a>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function FilterField({ label, values, onAdd, onRemove, placeholder }) {
+  const [text, setText] = useState("")
+  const inputRef = useRef(null)
+
+  const commit = () => {
+    const v = text.trim()
+    if (v) { onAdd(v); setText("") }
+  }
+
+  return (
+    <div style={ff.section} onClick={() => inputRef.current?.focus()}>
+      <span style={ff.label}>{label}</span>
+      {values.map((v, i) => (
+        <span key={i} style={ff.chip}>
+          {v}
+          <button style={ff.chipX} onClick={e => { e.stopPropagation(); onRemove(v) }}>×</button>
+        </span>
+      ))}
+      <input
+        ref={inputRef}
+        style={ff.input}
+        value={text}
+        onChange={e => setText(e.target.value)}
+        onKeyDown={e => {
+          if (e.key === "Enter") commit()
+          if (e.key === "Backspace" && !text && values.length) onRemove(values[values.length - 1])
+        }}
+        placeholder={values.length === 0 ? placeholder : ""}
+      />
+    </div>
+  )
+}
+
+const ff = {
+  section: { display: "flex", alignItems: "center", gap: 6, cursor: "text", flex: 1, minWidth: 120 },
+  label: { fontSize: 11, fontWeight: 700, color: "#16825C", background: "#ECFDF5", border: "1px solid #A7F3D0", borderRadius: 4, padding: "3px 8px", whiteSpace: "nowrap", flexShrink: 0 },
+  chip: { display: "inline-flex", alignItems: "center", gap: 3, background: "#14201C", color: "#fff", borderRadius: 4, padding: "3px 4px 3px 8px", fontSize: 12, fontWeight: 500, whiteSpace: "nowrap", flexShrink: 0 },
+  chipX: { background: "none", border: "none", color: "rgba(255,255,255,0.6)", fontSize: 14, cursor: "pointer", padding: "0 2px", lineHeight: 1 },
+  input: { border: "none", outline: "none", fontSize: 13, color: "#1C1E21", background: "transparent", fontFamily: "inherit", minWidth: 80, flex: 1 },
+}
+
+function QueryChip({ icon, label, value, editing, editValue, onEditChange, onStartEdit, onCommit, onCancel, onClear }) {
+  const ref = useRef(null)
+  useEffect(() => { if (editing && ref.current) ref.current.focus() }, [editing])
+
+  if (editing) return (
+    <div style={qc.editing}>
+      <span style={qc.icon}>{icon}</span>
+      <input
+        ref={ref}
+        style={qc.input}
+        value={editValue}
+        onChange={e => onEditChange(e.target.value)}
+        onKeyDown={e => { if (e.key === "Enter") onCommit(); if (e.key === "Escape") onCancel() }}
+        onBlur={onCommit}
+        placeholder={label}
+      />
+    </div>
+  )
+
+  if (value) return (
+    <div style={qc.filled} onClick={onStartEdit}>
+      <span style={qc.icon}>{icon}</span>
+      <span style={qc.text}>{value}</span>
+      <button style={qc.x} onClick={e => { e.stopPropagation(); onClear() }}>×</button>
+    </div>
+  )
+
+  return (
+    <button style={qc.empty} onClick={onStartEdit}>
+      {icon} {label}
+    </button>
+  )
+}
+
+const qc = {
+  filled: { display: "inline-flex", alignItems: "center", gap: 5, background: "#14201C", color: "#fff", borderRadius: 6, padding: "5px 4px 5px 10px", fontSize: 12, fontWeight: 500, cursor: "pointer", flexShrink: 0, userSelect: "none" },
+  editing: { display: "inline-flex", alignItems: "center", gap: 6, background: "#fff", border: "1.5px solid #16825C", borderRadius: 6, padding: "4px 10px", flexShrink: 0 },
+  empty: { display: "inline-flex", alignItems: "center", gap: 4, background: "none", border: "1.5px dashed #D1D5DB", borderRadius: 6, padding: "5px 10px", fontSize: 11, color: "#9CA3AF", cursor: "pointer", flexShrink: 0, fontFamily: "inherit" },
+  icon: { fontSize: 12 },
+  text: { maxWidth: 130, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" },
+  x: { background: "none", border: "none", color: "rgba(255,255,255,0.65)", fontSize: 16, cursor: "pointer", padding: "0 3px", lineHeight: 1 },
+  input: { border: "none", outline: "none", fontSize: 12, color: "#1C1E21", width: 140, background: "transparent", fontFamily: "inherit" },
+}
+
 function RolePill({ roles }) {
   const [open, setOpen] = useState(false)
   if (!roles || roles.length === 0) return null
@@ -501,8 +686,8 @@ function RolePill({ roles }) {
       <button
         onClick={() => setOpen(o => !o)}
         style={{
-          background: "#EBF3FD", border: "1px solid #BFDBFE", borderRadius: 20,
-          color: "#1A73E8", fontSize: 11, fontWeight: 600, padding: "3px 10px",
+          background: "#F5F5F7", border: "1px solid #E4E4E7", borderRadius: 20,
+          color: "#3F3F46", fontSize: 11, fontWeight: 600, padding: "3px 10px",
           cursor: "pointer", whiteSpace: "nowrap",
         }}
       >
@@ -532,8 +717,8 @@ function MobileJobCard({ job, rating, selected, onClick }) {
   return (
     <div onClick={onClick} style={{
       ...m.jobCard,
-      background: selected ? "#F0F7FF" : "#fff",
-      borderLeft: `3px solid ${selected ? "#1A73E8" : "transparent"}`,
+      background: selected ? "#F5F3FF" : "#fff",
+      borderLeft: `3px solid ${selected ? "#16825C" : "transparent"}`,
     }}>
       <div style={m.jobCardTop}>
         <div style={m.jobCardTitle}>{job.title}</div>
@@ -548,45 +733,53 @@ function MobileJobCard({ job, rating, selected, onClick }) {
       <div style={m.jobCardCompany}>{job.company}</div>
       <div style={m.jobCardMeta}>
         {job.jobType && <span style={m.jobCardTag}>{job.jobType}</span>}
-        {job.salary && <><span style={m.jobCardSep}>·</span><span style={{ ...m.jobCardTag, color: "#1A73E8", fontWeight: 600 }}>{job.salary}</span></>}
+        {job.salary && <><span style={m.jobCardSep}>·</span><span style={{ ...m.jobCardTag, color: "#16825C", fontWeight: 600 }}>{job.salary}</span></>}
         {date && <span style={{ ...m.jobCardTag, marginLeft: "auto" }}>{date}</span>}
       </div>
     </div>
   )
 }
 
+const NAVY = "#14201C"
+const GREEN = "#16825C"
+
 const s = {
-  app: { height: "100vh", display: "flex", flexDirection: "column", fontFamily: "'Inter', sans-serif", background: "#F5F6F7", overflow: "hidden" },
-  nav: { background: "#fff", borderBottom: "1px solid #E4E6EB", padding: "0 20px", height: 52, display: "flex", alignItems: "center", gap: 16, flexShrink: 0, zIndex: 10 },
-  navLogo: { fontSize: 17, fontWeight: 800, color: "#1C1E21", letterSpacing: "-0.5px", flexShrink: 0 },
-  searchGroup: { flex: 1, display: "flex", alignItems: "center", background: "#F5F6F7", borderRadius: 8, border: "1.5px solid #E4E6EB", overflow: "hidden", maxWidth: 800, height: 38 },
-  searchField: { flex: 1, display: "flex", flexDirection: "column", padding: "4px 14px", justifyContent: "center" },
-  searchFieldLabel: { fontSize: 9, fontWeight: 700, color: "#9CA3AF", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 1 },
-  searchInput: { background: "transparent", border: "none", outline: "none", fontSize: 13, color: "#1C1E21", padding: 0, width: "100%" },
-  searchDivider: { width: 1, height: 28, background: "#E4E6EB", flexShrink: 0 },
-  searchBtn: { background: "#1A73E8", color: "#fff", border: "none", padding: "0 20px", fontSize: 13, fontWeight: 600, cursor: "pointer", height: 38, flexShrink: 0, borderRadius: "0 6px 6px 0" },
-  navRight: { marginLeft: "auto", display: "flex", alignItems: "center", gap: 8 },
-  screenTabs: { display: "flex", marginLeft: 16, borderLeft: "1px solid #E4E6EB", paddingLeft: 16, gap: 2 },
-  screenTab: { fontSize: 12, fontWeight: 600, padding: "4px 10px", borderRadius: 6, cursor: "pointer" },
-  screenTabActive: { color: "#1A73E8", background: "#EBF3FD" },
-  resumeBadge: { background: "#F0FFF4", color: "#16A34A", fontSize: 11, fontWeight: 600, padding: "4px 10px", borderRadius: 20, border: "1px solid #BBF7D0" },
-  bgPill: { background: "#FEF3C7", color: "#92400E", fontSize: 11, fontWeight: 600, padding: "4px 10px", borderRadius: 20, display: "flex", alignItems: "center" },
-  pill: { background: "#EBF3FD", color: "#1A73E8", fontSize: 11, fontWeight: 600, padding: "4px 10px", borderRadius: 20 },
-  body: { display: "flex", flex: 1, overflow: "hidden" },
-  sidebar: { width: 240, minWidth: 240, background: "#fff", borderRight: "1px solid #E4E6EB", display: "flex", flexDirection: "column", overflow: "hidden", flexShrink: 0 },
-  resumeWrap: { padding: "14px 16px", borderBottom: "1px solid #F0F2F5", flexShrink: 0 },
-  listPane: { width: 320, minWidth: 320, background: "#fff", borderRight: "1px solid #E4E6EB", display: "flex", flexDirection: "column", overflow: "hidden", flexShrink: 0 },
-  listHeader: { padding: "10px 16px", borderBottom: "1px solid #F0F2F5", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "space-between" },
+  app: { height: "100vh", display: "flex", flexDirection: "column", fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif", background: "#E8E8EE", overflow: "hidden" },
+  nav: { background: "#000D19", padding: "0 20px", height: 56, display: "flex", alignItems: "center", gap: 16, flexShrink: 0, zIndex: 10, borderBottom: "1px solid #F0F2F5" },
+  navLogo: { fontSize: 18, fontWeight: 800, letterSpacing: "-0.5px", flexShrink: 0, color: "#fff" },
+  filterBar: { background: "#fff", borderBottom: "1px solid #F0F2F5", padding: "0 16px", display: "flex", alignItems: "center", height: 46, flexShrink: 0, gap: 0 },
+  filterDivider: { width: 1, height: 24, background: "#E4E6EB", flexShrink: 0, margin: "0 12px" },
+  searchBtn: { background: GREEN, color: "#fff", border: "none", padding: "0 18px", fontSize: 13, fontWeight: 600, cursor: "pointer", height: 34, flexShrink: 0, borderRadius: 6, letterSpacing: 0.1, whiteSpace: "nowrap", marginLeft: 6 },
+  clearAllBtn: { background: "none", border: "none", color: "#9CA3AF", fontSize: 11, fontWeight: 500, cursor: "pointer", padding: 0 },
+  navRight: { marginLeft: "auto", display: "flex", alignItems: "center", gap: 10 },
+  navAvatar: { width: 30, height: 30, borderRadius: "50%", background: NAVY, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, cursor: "pointer", flexShrink: 0 },
+  aboutBtn: { background: "none", border: "1px solid rgba(255,255,255,0.15)", borderRadius: 6, color: "#B2B7BC", fontSize: 11, fontWeight: 500, padding: "4px 10px", cursor: "pointer", fontFamily: "inherit" },
+  screenTabs: { display: "flex", marginLeft: 16, paddingLeft: 16, gap: 0, borderLeft: "1px solid #F0F2F5", height: "100%", alignItems: "stretch" },
+  screenTab: { fontSize: 13, fontWeight: 600, padding: "0 12px", cursor: "pointer", color: "#B2B7BC", background: "none", border: "none", borderBottom: "2px solid transparent", fontFamily: "inherit", display: "flex", alignItems: "center" },
+  screenTabActive: { color: "#12DF8B", borderBottom: `2px solid ${GREEN}` },
+  resumeBadge: { background: "#ECFDF5", color: GREEN, fontSize: 11, fontWeight: 600, padding: "4px 10px", borderRadius: 20, border: "1px solid #A7F3D0" },
+  bgPill: { background: "#ECFDF5", color: GREEN, fontSize: 11, fontWeight: 600, padding: "4px 10px", borderRadius: 20, display: "flex", alignItems: "center" },
+  pill: { background: "#ECFDF5", color: GREEN, fontSize: 11, fontWeight: 600, padding: "4px 10px", borderRadius: 20 },
+  body: { display: "flex", flex: 1, overflow: "hidden", gap: 2, padding: 2 },
+  sidebar: { width: 240, minWidth: 240, background: "#fff", borderRadius: 8, display: "flex", flexDirection: "column", overflow: "hidden", flexShrink: 0 },
+  resumeWrap: { padding: "14px 16px", borderBottom: "1px solid #F2F2F5", flexShrink: 0 },
+  listPane: { width: 380, minWidth: 380, background: "#fff", borderRadius: 8, display: "flex", flexDirection: "column", overflow: "hidden", flexShrink: 0 },
+  listHeader: { padding: "10px 16px 8px", borderBottom: "1px solid #F2F2F5", flexShrink: 0 },
+  listHeaderTop: { display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 },
   listCount: { fontSize: 12, color: "#65676B", fontWeight: 500 },
+  sortSelect: { fontSize: 11, color: "#65676B", border: "1px solid #E4E6EB", borderRadius: 6, padding: "4px 8px", cursor: "pointer", background: "#fff", outline: "none", fontFamily: "inherit" },
+  topHirers: { display: "flex", alignItems: "center", gap: 5, flexWrap: "wrap" },
+  topHirerLabel: { fontSize: 11, color: "#9CA3AF" },
+  topHirerChip: { fontSize: 11, color: "#1C1E21", background: "#F5F6F7", border: "1px solid #E4E6EB", borderRadius: 20, padding: "2px 8px" },
   loadingMore: { fontSize: 11, color: "#D97706", fontWeight: 500, display: "flex", alignItems: "center", gap: 3 },
   listScroll: { flex: 1, overflowY: "auto" },
-  detailPane: { flex: 1, background: "#fff", overflow: "hidden", display: "flex", flexDirection: "column" },
+  detailPane: { flex: 1, background: "#fff", borderRadius: 8, overflow: "hidden", display: "flex", flexDirection: "column" },
   emptyList: { padding: "48px 24px", textAlign: "center" },
   emptyListTitle: { fontSize: 14, fontWeight: 600, color: "#1C1E21", marginBottom: 6 },
   emptyListSub: { fontSize: 12, color: "#9CA3AF" },
-  overlay: { position: "absolute", inset: 0, background: "rgba(255,255,255,0.80)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 5, backdropFilter: "blur(1px)" },
+  overlay: { position: "absolute", inset: 0, background: "rgba(255,255,255,0.85)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 5, backdropFilter: "blur(2px)" },
   overlayInner: { display: "flex", flexDirection: "column", alignItems: "center", gap: 10 },
-  overlayIcon: { fontSize: 28, display: "inline-block", animation: "spin 1s linear infinite", color: "#1A73E8" },
+  overlayIcon: { fontSize: 28, display: "inline-block", animation: "spin 1s linear infinite", color: GREEN },
   overlayText: { fontSize: 13, color: "#65676B", fontWeight: 500 },
 }
 
@@ -596,8 +789,8 @@ const m = {
   logoSmall: { fontSize: 16, fontWeight: 800, color: "#1C1E21", letterSpacing: "-0.5px", flexShrink: 0 },
   searchRow: { flex: 1, display: "flex", gap: 8 },
   searchInput: { flex: 1, padding: "8px 12px", borderRadius: 8, border: "1.5px solid #E4E6EB", fontSize: 14, outline: "none", color: "#1C1E21", background: "#F5F6F7", minWidth: 0 },
-  searchBtn: { background: "#1A73E8", color: "#fff", border: "none", borderRadius: 8, padding: "8px 14px", fontSize: 13, fontWeight: 600, cursor: "pointer", flexShrink: 0 },
-  backBtn: { background: "none", border: "none", color: "#1A73E8", fontSize: 15, fontWeight: 600, cursor: "pointer", flexShrink: 0, padding: 0 },
+  searchBtn: { background: "#16825C", color: "#fff", border: "none", borderRadius: 8, padding: "8px 14px", fontSize: 13, fontWeight: 600, cursor: "pointer", flexShrink: 0 },
+  backBtn: { background: "none", border: "none", color: "#16825C", fontSize: 15, fontWeight: 600, cursor: "pointer", flexShrink: 0, padding: 0 },
   detailNavTitle: { flex: 1, fontSize: 14, fontWeight: 600, color: "#1C1E21", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" },
   statusBar: { background: "#FEF3C7", padding: "6px 16px", display: "flex", gap: 8, flexShrink: 0 },
   statusPill: { fontSize: 11, color: "#92400E", fontWeight: 600 },
@@ -606,7 +799,7 @@ const m = {
   listMeta: { padding: "8px 16px", background: "#fff", borderBottom: "1px solid #F0F2F5", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "space-between" },
   listMetaText: { fontSize: 12, color: "#65676B", fontWeight: 500 },
   filterBtn: { background: "#F5F6F7", border: "1.5px solid #E4E6EB", borderRadius: 20, color: "#65676B", padding: "5px 14px", fontSize: 12, cursor: "pointer", fontWeight: 500 },
-  filterBtnActive: { background: "#EBF3FD", border: "1.5px solid #1A73E8", color: "#1A73E8", fontWeight: 600 },
+  filterBtnActive: { background: "#F5F3FF", border: "1.5px solid #16825C", color: "#16825C", fontWeight: 600 },
   spinnerText: { fontSize: 11, color: "#D97706", fontWeight: 500 },
   list: { flex: 1, overflowY: "auto", WebkitOverflowScrolling: "touch" },
   empty: { padding: "60px 24px", textAlign: "center" },

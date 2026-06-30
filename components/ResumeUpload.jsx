@@ -1,4 +1,4 @@
-import { useRef, useState } from "react"
+﻿import { useRef, useState } from "react"
 
 export default function ResumeUpload({
   onParsed, parsing, resumeData, resumeSignal, fitPreferences,
@@ -60,7 +60,7 @@ export default function ResumeUpload({
     both: "Balanced",
   }[fitPreferences.weightBasis] : null
 
-  const cardBg = matchState === "mismatch" ? "#FCF0F0" : matchState === "partial" ? "#FCF6EC" : "#F0F7FF"
+  const cardBg = !resumeData ? "#fff" : matchState === "mismatch" ? "#FCF0F0" : matchState === "partial" ? "#FCF6EC" : "#ECFDF5"
   const accentColor = matchState === "mismatch" ? "#DC2626" : matchState === "partial" ? "#D97706" : null
   const mismatchTip = matchState === "mismatch"
     ? `Your resume reads as ${(resumeRoles[0] || "another direction")}, not ${(activeRoles[0] || "your search")}. This is why most jobs rate Low Priority.`
@@ -114,7 +114,7 @@ export default function ResumeUpload({
           <div style={s.prefActions}>
             <button style={s.editBtn} onClick={onEditPreferences}>Edit roles & fit</button>
             <button
-              style={{ ...s.editBtn, color: isRating ? "#BCC0C4" : "#1A73E8", borderColor: isRating ? "#E4E6EB" : "#BFDBFE", background: isRating ? "none" : "#F0F7FF" }}
+              style={{ ...s.editBtn, color: isRating ? "#BCC0C4" : "#16825C", borderColor: isRating ? "#E4E6EB" : "#A7F3D0", background: isRating ? "none" : "#ECFDF5" }}
               onClick={onRerate}
               disabled={isRating}
             >
@@ -124,95 +124,116 @@ export default function ResumeUpload({
         </div>
       )}
 
-      {!resumeData && (
-        <div style={s.pitch}>Upload your resume to unlock fit ratings and tailored resume generation.</div>
-      )}
-
-      {/* Stats */}
-      <div style={s.stats}>
-        <div style={s.statRow}>
-          <span style={s.statLabel}>Jobs analysed</span>
-          <span style={s.statVal}>{counts.total}</span>
-        </div>
-        <div style={s.statDivider} />
-        <StatRow cat="Strong Fit" color="#16A34A" label="Strong Fit" count={counts.strong} />
-        <StatRow cat="Worth Exploring" color="#D97706" label="Worth Exploring" count={counts.worth} />
-        <StatRow cat="Low Priority" color="#DC2626" label="Low Priority" count={counts.low} />
-      </div>
-
-      {/* AI signal — collapsible, above upload */}
-      {(resumeSignal || resumeRoles.length > 0) && (
-        <div style={s.signalBox}>
-          <div style={s.signalHeader} onClick={() => setSignalExpanded(e => !e)}>
-            <span style={s.signalLabel}>AI READ</span>
-            <span style={s.signalChevron}>{signalExpanded ? "↑" : "↓"}</span>
+      {!resumeData ? (
+        /* Locked state */
+        <>
+          <div style={s.lockedList}>
+            {[
+              { icon: "⭐", label: "Fit score" },
+              { icon: "📊", label: "Why you fit" },
+              { icon: "🔔", label: "Watch outs" },
+              { icon: "📄", label: "Tailored resume" },
+            ].map(({ icon, label }) => (
+              <div key={label} style={s.lockedRow}>
+                <span style={s.lockedIcon}>{icon}</span>
+                <span style={s.lockedLabel}>{label}</span>
+                <span style={s.lockedBadge}>Locked</span>
+              </div>
+            ))}
+          </div>
+          <div
+            style={{ ...s.uploadBtn, ...(dragging ? s.uploadBtnDrag : {}) }}
+            onDrop={onDrop}
+            onDragOver={e => { e.preventDefault(); setDragging(true) }}
+            onDragLeave={() => setDragging(false)}
+            onClick={() => fileRef.current.click()}
+          >
+            <input ref={fileRef} type="file" accept="application/pdf" style={{ display: "none" }} onChange={e => handleFile(e.target.files[0])} />
+            {parsing ? (
+              <><span style={{ display: "inline-block", animation: "spin 1s linear infinite", marginRight: 6 }}>⟳</span>Parsing...</>
+            ) : (
+              "↑ Upload resume"
+            )}
+          </div>
+          {!parsing && (
+            <button style={s.dummyToggle} onClick={onTrialClick}>Try with a dummy resume</button>
+          )}
+        </>
+      ) : (
+        /* Uploaded state */
+        <>
+          {/* Stats */}
+          <div style={s.stats}>
+            <div style={s.statRow}>
+              <span style={s.statLabel}>Jobs analysed</span>
+              <span style={s.statVal}>{counts.total}</span>
+            </div>
+            <div style={s.statDivider} />
+            <StatRow cat="Strong Fit" color="#16A34A" label="Strong Fit" count={counts.strong} />
+            <StatRow cat="Worth Exploring" color="#D97706" label="Worth Exploring" count={counts.worth} />
+            <StatRow cat="Low Priority" color="#DC2626" label="Low Priority" count={counts.low} />
           </div>
 
-          {resumeRoles.length > 0 ? (
-            <>
-              <div style={s.signalSub}>Your resume suggests:</div>
-              <ul style={s.roleUl}>
-                {resumeRoles.map((r, i) => <li key={i} style={s.roleLi}>{r}</li>)}
-              </ul>
-              {manualRoles.length > 0 && (
+          {/* AI signal — collapsible */}
+          {(resumeSignal || resumeRoles.length > 0) && (
+            <div style={s.signalBox}>
+              <div style={s.signalHeader} onClick={() => setSignalExpanded(e => !e)}>
+                <span style={s.signalLabel}>AI READ</span>
+                <span style={s.signalChevron}>{signalExpanded ? "↑" : "↓"}</span>
+              </div>
+              {resumeRoles.length > 0 ? (
                 <>
-                  <div style={s.signalSub}>Manually added:</div>
+                  <div style={s.signalSub}>Your resume suggests:</div>
                   <ul style={s.roleUl}>
-                    {manualRoles.map((r, i) => <li key={i} style={s.roleLi}>{r}</li>)}
+                    {resumeRoles.map((r, i) => <li key={i} style={s.roleLi}>{r}</li>)}
                   </ul>
+                  {manualRoles.length > 0 && (
+                    <>
+                      <div style={s.signalSub}>Manually added:</div>
+                      <ul style={s.roleUl}>
+                        {manualRoles.map((r, i) => <li key={i} style={s.roleLi}>{r}</li>)}
+                      </ul>
+                    </>
+                  )}
+                  {signalExpanded && resumeSignal && (
+                    <div style={{ ...s.signalText, marginTop: 8 }}>{resumeSignal}</div>
+                  )}
                 </>
+              ) : (
+                <div style={{
+                  ...s.signalText,
+                  WebkitLineClamp: signalExpanded ? "unset" : 2,
+                  overflow: signalExpanded ? "visible" : "hidden",
+                  display: "-webkit-box",
+                  WebkitBoxOrient: "vertical",
+                }}>
+                  {resumeSignal}
+                </div>
               )}
-              {signalExpanded && resumeSignal && (
-                <div style={{ ...s.signalText, marginTop: 8 }}>{resumeSignal}</div>
-              )}
-            </>
-          ) : (
-            <div style={{
-              ...s.signalText,
-              WebkitLineClamp: signalExpanded ? "unset" : 2,
-              overflow: signalExpanded ? "visible" : "hidden",
-              display: "-webkit-box",
-              WebkitBoxOrient: "vertical",
-            }}>
-              {resumeSignal}
             </div>
           )}
-        </div>
-      )}
 
-      {/* Upload zone */}
-      <div
-        style={{ ...s.dropzone, ...(dragging ? s.dropzoneActive : {}) }}
-        onDrop={onDrop}
-        onDragOver={e => { e.preventDefault(); setDragging(true) }}
-        onDragLeave={() => setDragging(false)}
-        onClick={() => fileRef.current.click()}
-      >
-        <input ref={fileRef} type="file" accept="application/pdf" style={{ display: "none" }} onChange={e => handleFile(e.target.files[0])} />
-        {parsing ? (
-          <span style={s.dropText}>
-            <span style={{ display: "inline-block", animation: "spin 1s linear infinite", marginRight: 4 }}>⟳</span>
-            Parsing resume...
-          </span>
-        ) : resumeData ? (
-          <span style={s.dropText}>↑ Upload new resume</span>
-        ) : (
-          <>
-            <span style={s.dropIcon}>↑</span>
-            <span style={s.dropText}>Drop PDF or tap to upload</span>
-          </>
-        )}
-      </div>
+          {/* Re-upload zone */}
+          <div
+            style={{ ...s.dropzone, ...(dragging ? s.dropzoneActive : {}) }}
+            onDrop={onDrop}
+            onDragOver={e => { e.preventDefault(); setDragging(true) }}
+            onDragLeave={() => setDragging(false)}
+            onClick={() => fileRef.current.click()}
+          >
+            <input ref={fileRef} type="file" accept="application/pdf" style={{ display: "none" }} onChange={e => handleFile(e.target.files[0])} />
+            {parsing ? (
+              <span style={s.dropText}>
+                <span style={{ display: "inline-block", animation: "spin 1s linear infinite", marginRight: 4 }}>⟳</span>
+                Parsing resume...
+              </span>
+            ) : (
+              <span style={s.dropText}>↑ Upload new resume</span>
+            )}
+          </div>
 
-      {resumeData && (
-        <button style={s.removeBtn} onClick={onRemove}>Remove resume</button>
-      )}
-
-      {/* Trial with dummy resume — opens modal, below remove */}
-      {!parsing && (
-        <button style={s.dummyToggle} onClick={onTrialClick}>
-          ✦ Trial with dummy resume
-        </button>
+          <button style={s.removeBtn} onClick={onRemove}>Remove resume</button>
+        </>
       )}
 
       {error && <div style={s.error}>{error}</div>}
@@ -228,8 +249,15 @@ const s = {
   header: { display: "flex", alignItems: "center", gap: 6 },
   icon: { fontSize: 16 },
   title: { fontSize: 13, fontWeight: 700, color: "#1C1E21", flex: 1 },
-  spinner: { fontSize: 13, display: "inline-block", animation: "spin 1s linear infinite", color: "#1A73E8" },
+  spinner: { fontSize: 13, display: "inline-block", animation: "spin 1s linear infinite", color: "#16825C" },
   pitch: { fontSize: 12, color: "#65676B", lineHeight: 1.5 },
+  lockedList: { display: "flex", flexDirection: "column", gap: 2 },
+  lockedRow: { display: "flex", alignItems: "center", gap: 8, padding: "6px 0", borderBottom: "1px solid #F5F6F7" },
+  lockedIcon: { fontSize: 14, width: 20, textAlign: "center", flexShrink: 0 },
+  lockedLabel: { flex: 1, fontSize: 12, color: "#374151", fontWeight: 500 },
+  lockedBadge: { fontSize: 10, fontWeight: 600, color: "#9CA3AF", background: "#F5F6F7", border: "1px solid #E4E6EB", borderRadius: 20, padding: "2px 8px" },
+  uploadBtn: { background: "#16825C", color: "#fff", border: "none", borderRadius: 8, padding: "10px 0", fontSize: 13, fontWeight: 600, cursor: "pointer", textAlign: "center", display: "flex", alignItems: "center", justifyContent: "center", gap: 4 },
+  uploadBtnDrag: { background: "#0f6648" },
   resumeRow: { display: "flex", alignItems: "center", gap: 8 },
   resumeCheck: { width: 22, height: 22, borderRadius: "50%", background: "#16A34A", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 700, flexShrink: 0 },
   resumeName: { fontSize: 13, fontWeight: 700, color: "#1C1E21" },
@@ -245,24 +273,24 @@ const s = {
   statDot: { width: 6, height: 6, borderRadius: "50%", flexShrink: 0 },
   statLabel: { fontSize: 11, color: "#65676B", flex: 1 },
   statVal: { fontSize: 12, fontWeight: 700, color: "#1C1E21" },
-  signalBox: { background: "#fff", borderRadius: 8, padding: "10px 12px", borderLeft: "3px solid #1A73E8" },
+  signalBox: { background: "#fff", borderRadius: 8, padding: "10px 12px", borderLeft: "3px solid #16825C" },
   signalHeader: { display: "flex", justifyContent: "space-between", alignItems: "center", cursor: "pointer", marginBottom: 4 },
-  signalLabel: { fontSize: 9, fontWeight: 700, color: "#1A73E8", textTransform: "uppercase", letterSpacing: 1 },
+  signalLabel: { fontSize: 9, fontWeight: 700, color: "#16825C", textTransform: "uppercase", letterSpacing: 1 },
   signalChevron: { fontSize: 10, color: "#9CA3AF" },
   signalText: { fontSize: 11, color: "#374151", lineHeight: 1.5 },
   signalSub: { fontSize: 11, fontWeight: 600, color: "#1C1E21", marginTop: 4 },
   roleUl: { margin: "2px 0 4px", paddingLeft: 16 },
   roleLi: { fontSize: 12, color: "#374151", lineHeight: 1.5 },
-  dropzone: { border: "1.5px dashed #93C5FD", borderRadius: 8, padding: "12px", textAlign: "center", cursor: "pointer", background: "#fff", display: "flex", flexDirection: "column", alignItems: "center", gap: 4, transition: "all 0.15s" },
-  dropzoneActive: { background: "#EBF3FD", borderColor: "#1A73E8" },
-  dropIcon: { fontSize: 16, color: "#93C5FD" },
+  dropzone: { border: "1.5px dashed #D1D5DB", borderRadius: 8, padding: "12px", textAlign: "center", cursor: "pointer", background: "#fff", display: "flex", flexDirection: "column", alignItems: "center", gap: 4, transition: "all 0.15s" },
+  dropzoneActive: { background: "#ECFDF5", borderColor: "#16825C" },
+  dropIcon: { fontSize: 16, color: "#D1D5DB" },
   dropText: { fontSize: 12, color: "#65676B" },
   removeBtn: { background: "none", border: "1px solid #FECACA", borderRadius: 6, color: "#E53935", fontSize: 11, cursor: "pointer", padding: "5px 0", width: "100%", textAlign: "center" },
   dummyWrap: { display: "flex", flexDirection: "column", gap: 6 },
-  dummyToggle: { background: "none", border: "none", color: "#1A73E8", fontSize: 11, fontWeight: 600, cursor: "pointer", padding: 0, alignSelf: "center" },
+  dummyToggle: { background: "none", border: "none", color: "#16825C", fontSize: 11, fontWeight: 600, cursor: "pointer", padding: 0, alignSelf: "center" },
   dummyOptions: { display: "flex", flexDirection: "column", gap: 6 },
   dummyRow: { display: "flex", alignItems: "center", gap: 8 },
-  dummyPick: { flex: 1, background: "#fff", border: "1px solid #BFDBFE", borderRadius: 8, color: "#1C1E21", fontSize: 12, fontWeight: 600, cursor: "pointer", padding: "8px 10px", textAlign: "left" },
+  dummyPick: { flex: 1, background: "#fff", border: "1px solid #A7F3D0", borderRadius: 8, color: "#1C1E21", fontSize: 12, fontWeight: 600, cursor: "pointer", padding: "8px 10px", textAlign: "left" },
   dummyView: { fontSize: 11, color: "#65676B", textDecoration: "underline", flexShrink: 0, cursor: "pointer" },
   error: { fontSize: 11, color: "#DC2626" },
 }
