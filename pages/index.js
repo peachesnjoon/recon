@@ -626,11 +626,11 @@ function FilterField({ label, values, onAdd, onRemove, placeholder }) {
 }
 
 const ff = {
-  section: { display: "flex", alignItems: "center", gap: 6, cursor: "text", flex: 1, minWidth: 120 },
-  label: { fontSize: 11, fontWeight: 700, color: "#16825C", background: "#ECFDF5", border: "1px solid #A7F3D0", borderRadius: 4, padding: "3px 8px", whiteSpace: "nowrap", flexShrink: 0 },
-  chip: { display: "inline-flex", alignItems: "center", gap: 3, background: "#14201C", color: "#fff", borderRadius: 4, padding: "3px 4px 3px 8px", fontSize: 12, fontWeight: 500, whiteSpace: "nowrap", flexShrink: 0 },
-  chipX: { background: "none", border: "none", color: "rgba(255,255,255,0.6)", fontSize: 14, cursor: "pointer", padding: "0 2px", lineHeight: 1 },
-  input: { border: "none", outline: "none", fontSize: 13, color: "#1C1E21", background: "transparent", fontFamily: "inherit", minWidth: 80, flex: 1 },
+  section: { display: "flex", alignItems: "center", gap: 5, cursor: "text", flex: 1, minWidth: 100 },
+  label: { fontSize: 11, fontWeight: 600, color: "#9CA3AF", whiteSpace: "nowrap", flexShrink: 0, letterSpacing: 0.2 },
+  chip: { display: "inline-flex", alignItems: "center", gap: 3, background: "#F3F4F6", color: "#374151", border: "1px solid #E5E7EB", borderRadius: 20, padding: "2px 6px 2px 9px", fontSize: 12, fontWeight: 500, whiteSpace: "nowrap", flexShrink: 0 },
+  chipX: { background: "none", border: "none", color: "#9CA3AF", fontSize: 13, cursor: "pointer", padding: "0 1px", lineHeight: 1 },
+  input: { border: "none", outline: "none", fontSize: 13, color: "#1C1E21", background: "transparent", fontFamily: "inherit", minWidth: 60, flex: 1 },
 }
 
 function QueryChip({ icon, label, value, editing, editValue, onEditChange, onStartEdit, onCommit, onCancel, onClear }) {
@@ -750,8 +750,8 @@ const s = {
   app: { height: "100vh", display: "flex", flexDirection: "column", fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif", background: "#E8E8EE", overflow: "hidden" },
   nav: { background: "#000D19", padding: "0 20px", height: 56, display: "flex", alignItems: "center", gap: 16, flexShrink: 0, zIndex: 10, borderBottom: "1px solid #F0F2F5" },
   navLogo: { fontSize: 18, fontWeight: 800, letterSpacing: "-0.5px", flexShrink: 0, color: "#fff" },
-  filterBar: { background: "#fff", borderBottom: "1px solid #F0F2F5", padding: "0 16px", display: "flex", alignItems: "center", height: 46, flexShrink: 0, gap: 0 },
-  filterDivider: { width: 1, height: 24, background: "#E4E6EB", flexShrink: 0, margin: "0 12px" },
+  filterBar: { background: "#fff", borderBottom: "1px solid #F0F2F5", padding: "0 20px", display: "flex", alignItems: "center", height: 46, flexShrink: 0, gap: 0 },
+  filterDivider: { width: 1, height: 20, background: "#E5E7EB", flexShrink: 0, margin: "0 16px" },
   searchBtn: { background: GREEN, color: "#fff", border: "none", padding: "0 18px", fontSize: 13, fontWeight: 600, cursor: "pointer", height: 34, flexShrink: 0, borderRadius: 6, letterSpacing: 0.1, whiteSpace: "nowrap", marginLeft: 6 },
   clearAllBtn: { background: "none", border: "none", color: "#9CA3AF", fontSize: 11, fontWeight: 500, cursor: "pointer", padding: 0 },
   navRight: { marginLeft: "auto", display: "flex", alignItems: "center", gap: 10 },
