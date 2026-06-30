@@ -1,6 +1,6 @@
 import { BATCH_RATE_SYSTEM, BATCH_RATE_PROMPT } from "../../lib/prompts"
 
-export const config = { maxDuration: 120 }
+export const config = { maxDuration: 60 }
 
 async function rateChunk(resumeData, jobs, preferences) {
   const strippedJobs = jobs.map(j => ({
@@ -11,7 +11,7 @@ async function rateChunk(resumeData, jobs, preferences) {
     salary: j.salary,
     stage: j.stage,
     jdSummary: j.jdSummary,
-    jd: (j.jd || "").slice(0, 300),
+    jd: (j.jd || "").slice(0, 200),
   }))
 
   const response = await fetch("https://api.anthropic.com/v1/messages", {
@@ -46,8 +46,8 @@ export default async function handler(req, res) {
       rateChunk(resumeData, jobs.slice(mid), preferences),
     ])
 
-    const allRatings = {}
-    ;[...r1, ...r2].forEach(r => { allRatings[r.jobId] = r })
+    // both chunks return dicts keyed by job id — merge them
+    const allRatings = { ...r1, ...r2 }
     return res.status(200).json({ ratings: allRatings })
   } catch (err) {
     console.error("Rate error:", err.message)
