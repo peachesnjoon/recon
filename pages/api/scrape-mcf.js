@@ -1,5 +1,3 @@
-export const config = { maxDuration: 30 }
-
 import supabase from "../../lib/supabase"
 
 export default async function handler(req, res) {
@@ -7,7 +5,7 @@ export default async function handler(req, res) {
   const { keywords, limit = 100 } = req.body
 
   try {
-    // read from Supabase — keyword search across title and jd (or all jobs if no keyword)
+    // search by title only — avoids full-text scan on large jd column
     let query = supabase
       .from("jobs")
       .select("*")
@@ -16,7 +14,7 @@ export default async function handler(req, res) {
       .limit(limit)
 
     if (keywords && keywords.trim()) {
-      query = query.or(`title.ilike.%${keywords}%,jd.ilike.%${keywords}%`)
+      query = query.ilike("title", `%${keywords}%`)
     }
 
     const { data: rows, error } = await query
@@ -113,7 +111,7 @@ export default async function handler(req, res) {
     return res.status(200).json({ jobs, fromCache: false })
   } catch (err) {
     console.error("MCF error:", err.message)
-    return res.status(500).json({ error: err.message })
+    return res.status(200).json({ jobs: [], error: err.message })
   }
 }
 

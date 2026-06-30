@@ -15,7 +15,7 @@ export default async function handler(req, res) {
       const { data, error } = await supabase
         .from("jobs")
         .select("company")
-        .or(`title.ilike.%${keywords}%,jd.ilike.%${keywords}%`)
+        .ilike("title", `%${keywords}%`)
         .eq("source", "MCF")
 
       if (error) throw new Error(error.message)
@@ -83,6 +83,6 @@ export default async function handler(req, res) {
     return res.status(200).json({ rows })
   } catch (err) {
     console.error("market-snapshot error:", err.message)
-    return res.status(500).json({ error: err.message })
+    return res.status(200).json({ rows: [], error: err.message })
   }
 }
